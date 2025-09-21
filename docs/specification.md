@@ -1,266 +1,173 @@
-# Agent Payments Protocol (AP2): Building a Secure and Interoperable Future for AI-Driven Payments
+# Protocolo de Pagamentos de Agentes (AP2): Construindo um Futuro Seguro e Interoperável para Pagamentos Orientados por IA
 
-## Executive Summary
+## Resumo Executivo
 
-AI agents will redefine the landscape of digital commerce, promising
-unprecedented convenience, personalization, and efficiency. However, this shift
-exposes a fundamental challenge: the world's existing payments infrastructure
-was not designed for a future where autonomous, non-human agents act on a user's
-behalf, or transact with each other. Current payment protocols, built on the
-assumption of direct human initiated interaction with trusted interfaces, lack
-the mechanisms to securely validate an agent's authenticity and authority to
-transact. This exposes a long-standing defense against online fraud, creates
-ambiguity around transaction liability, and threatens adoption, not only of
-agent commerce, but also negatively impacts existing digital commerce.
+Os agentes de IA redefinirão o cenário do comércio digital, prometendo conveniência, personalização e eficiência sem precedentes. No entanto, essa mudança expõe um desafio fundamental: a infraestrutura de pagamentos existente do mundo não foi projetada para um futuro onde agentes autônomos e não humanos atuam em nome de um usuário, ou transacionam entre si. Os protocolos de pagamento atuais, construídos com base na suposição de interação direta do usuário humano com uma interface confiável, carecem dos mecanismos para validar com segurança a autenticidade e autoridade de um agente para transacionar. Isso expõe uma defesa de longa data contra fraudes online, cria ambiguidade em torno da responsabilidade da transação e ameaça a adoção, não apenas do comércio de agentes, mas também impacta negativamente o comércio digital existente.
 
-Without a common, trusted protocol, the industry faces the prospect of a
-fragmented and insecure ecosystem, characterized by proprietary, siloed
-solutions that increase complexity for merchants, create friction for users, and
-prevent financial institutions from uniformly assessing risk. To address this
-gap, this protocol proposes an open, interoperable protocol for agent payments.
-This protocol, designed as an extension for emerging agent-to-agent (A2A) and
-model-context protocols (MCP), establishes a secure and reliable framework for
-AI-driven commerce.
+Sem um protocolo comum e confiável, a indústria enfrenta a perspectiva de um ecossistema fragmentado e inseguro, caracterizado por soluções proprietárias e isoladas que aumentam a complexidade para comerciantes, criam atrito para usuários e impedem que instituições financeiras avaliem uniformemente o risco. Para abordar essa lacuna, este protocolo propõe um protocolo aberto e interoperável para pagamentos de agentes. Este protocolo, projetado como uma extensão para protocolos emergentes de agente-para-agente (A2A) e protocolo de contexto de modelo (MCP), estabelece uma estrutura segura e confiável para o comércio orientado por IA.
 
-## An Invitation to Collaborate: Roadmap and Community Engagement
+## Um Convite para Colaborar: Roteiro e Engajamento da Comunidade
 
-The success of this foundational protocol for agent payments depends on broad
-industry participation, feedback, and public support. We invite all stakeholders
-in the commerce and payments ecosystem to join in refining and building this
-open protocol.
+O sucesso deste protocolo fundamental para pagamentos de agentes depende da participação ampla da indústria, feedback e apoio público. Convidamos todas as partes interessadas no ecossistema de comércio e pagamentos a se juntarem para refinar e construir este protocolo aberto.
 
-### Proposed Roadmap
+### Roteiro Proposto
 
-The development and rollout of the protocol are envisioned in a phased approach,
-allowing the ecosystem to build, test, and adopt capabilities incrementally.
+O desenvolvimento e implementação do protocolo são previstos em uma abordagem faseada, permitindo que o ecossistema construa, teste e adote capacidades de forma incremental.
 
-- **V0.1**: The initial specification focuses on establishing the core
-    architecture and enabling the most common use cases. Key features include:
-    - Support for "pull" payment methods (e.g., credit/debit cards)
-    - Well-defined data payloads to support transparent accountability based
-        on the VDC framework
-    - Support for human-present scenarios
-    - Support for user and merchant-initiated step-up challenges
-    - Detailed sequence diagram and reference implementation using
-        [A2A protocol](https://a2a-protocol.org/)
-- **V1.x**: Subsequent versions will expand the protocol's capabilities based
-    on community feedback and evolving needs. Potential areas of focus include:
-    - Full support for "push" payments and all payment methods (e.g.,
-        real-time bank transfers, e-wallets etc.)
-    - Standardized flows for recurring payments and subscriptions
-    - Support for human-not-present scenarios
-    - Detailed sequence diagrams for MCP-based implementations
-- **Long-Term Vision**: Longer term, we plan the protocol to incorporate more
-    intelligence and flexibility, including:
-    - Native support for complex, multi-merchant transaction topologies
-    - Support for real-time negotiations between buyer and seller agents
+- **V0.1**: A especificação inicial foca em estabelecer a arquitetura principal e habilitar os casos de uso mais comuns. Recursos principais incluem:
+    - Suporte para métodos de pagamento "pull" (por exemplo, cartões de crédito/débito)
+    - Cargas de dados bem definidas para suportar responsabilidade transparente baseada no framework VDC
+    - Suporte para cenários humano-presente
+    - Suporte para desafios de escalonamento iniciados por usuário e comerciante
+    - Diagrama de sequência detalhado e implementação de referência usando o [protocolo A2A](https://a2a-protocol.org/)
+- **V1.x**: Versões subsequentes expandirão as capacidades do protocolo com base no feedback da comunidade e necessidades em evolução. Áreas potenciais de foco incluem:
+    - Suporte completo para pagamentos "push" e todos os métodos de pagamento (por exemplo, transferências bancárias em tempo real, carteiras eletrônicas etc.)
+    - Fluxos padronizados para pagamentos recorrentes e assinaturas
+    - Suporte para cenários humano-não-presente
+    - Diagramas de sequência detalhados para implementações baseadas em MCP
+- **Visão de Longo Prazo**: A longo prazo, planejamos que o protocolo incorpore mais inteligência e flexibilidade, incluindo:
+    - Suporte nativo para topologias de transação complexas e multi-comerciantes
+    - Suporte para negociações em tempo real entre agentes compradores e vendedores
 
-We believe that a collaborative approach is essential to creating a protocol
-that is robust, secure, and meets the diverse needs of the entire ecosystem. We
-actively seek feedback and critique on the github repository through issues and
-discussions.
+Acreditamos que uma abordagem colaborativa é essencial para criar um protocolo que seja robusto, seguro e atenda às diversas necessidades de todo o ecossistema. Buscamos ativamente feedback e crítica no repositório github através de issues e discussões.
 
-## Section 1: The New Frontier of Commerce: Why Agent Payments Require a Foundational Protocol
+## Seção 1: A Nova Fronteira do Comércio: Por que os Pagamentos de Agentes Precisam de um Protocolo Fundamental
 
-### 1.1 The Rise of Agent Commerce
+### 1.1 O Surgimento do Comércio de Agentes
 
-The evolution of digital interaction is entering a new phase, moving beyond
-direct manipulation of UIs to conversational and delegated task execution. AI
-agents are rapidly becoming primary actors, capable of understanding complex
-user requests and executing multistep tasks autonomously. In commerce, this
-translates into a paradigm shift where agents will manage everything from
-routine purchases and subscription management to complex product research, price
-negotiation, and dynamic order bundling across multiple vendors. This new era of
-agent commerce promises to unlock immense value, offering users a
-hyper-personalized and frictionless shopping experience while providing
-merchants with new, intelligent channels to reach and serve customers.
+A evolução da interação digital está entrando em uma nova fase, movendo-se além da manipulação direta de UIs para execução de tarefas conversacionais e delegadas. Os agentes de IA estão se tornando rapidamente atores primários, capazes de entender solicitações complexas do usuário e executar tarefas multistep de forma autônoma. No comércio, isso se traduz em uma mudança de paradigma onde os agentes gerenciarão tudo, desde compras rotineiras e gerenciamento de assinaturas até pesquisa complexa de produtos, negociação de preços e agrupamento dinâmico de pedidos em vários vendedores. Este novo era do comércio de agentes promete desbloquear um valor imenso, oferecendo aos usuários uma experiência de compras hiperpersonalizada e sem atrito, ao mesmo tempo em que fornece aos comerciantes novos canais inteligentes para alcançar e servir clientes.
 
-### 1.2 The Foundational Gap: A Crisis of Trust and Liability
+### 1.2 A Lacuna Fundamental: Uma Crise de Confiança e Responsabilidade
 
-Despite its promise, the rise of agent commerce exposes a critical vulnerability
-in the existing digital payments infrastructure. Today's payment protocols are
-designed around the principle of a human user directly interacting with a
-trusted interface, such as a merchant's website or a payment provider's app.
-Authentication, authorization, and liability are all predicated on this direct
-human involvement.
+Apesar de sua promessa, o surgimento do comércio de agentes expõe uma vulnerabilidade crítica na infraestrutura de pagamentos digitais existente. Os protocolos de pagamento atuais são projetados em torno do princípio de um usuário humano interagindo diretamente com uma interface confiável, como o site de um comerciante ou o aplicativo de um provedor de pagamento. Autenticação, autorização e responsabilidade são todas predeterminadas nessa interação humana direta.
 
-Autonomous agents shatter this assumption. When an agent initiates a payment,
-fundamental questions arise that current systems are ill-equipped to answer:
+Agentes autônomos quebram essa suposição. Quando um agente inicia um pagamento, surgem questões fundamentais que os sistemas atuais não estão equipados para responder:
 
-- Authorization & Auditability: What verifiable proof demonstrates that the
-    user granted the agent the specific authority to make this particular
-    purchase?
-- Authenticity of Intent: How can a merchant or payment processor be certain
-    that the agent's request accurately reflects the human user's true intent?
-- Agent Error and "Hallucination": How does the system protect against agent
-    errors, such as misinterpreting a user's request or "hallucinating" product
-    details, which could lead to incorrect purchases?
-- Accountability: In the event of a fraudulent or erroneous transaction, who
-    is accountable? The user who delegated the task? The developer of the
-    shopping agent? The merchant who accepted the order? Or the payment network
-    that processed it?
+- Autorização e Auditabilidade: Que prova verificável demonstra que o usuário concedeu autoridade específica ao agente para fazer essa compra particular?
+- Autenticidade da Intenção: Como um comerciante ou processador de pagamento pode ter certeza de que a solicitação do agente reflete com precisão a verdadeira intenção do usuário humano?
+- Erro de Agente e "Alucinação": Como o sistema protege contra erros de agentes, como interpretar mal uma solicitação do usuário ou "alucinar" detalhes do produto, o que poderia levar a compras incorretas?
+- Responsabilidade: Em caso de uma transação fraudulenta ou errônea, quem é responsável? O usuário que delegou a tarefa? O desenvolvedor do agente de compras? O comerciante que aceitou o pedido? Ou a rede de pagamento que processou?
 
-This ambiguity creates a crisis of trust. Without a robust framework to validate
-agent authority and assign liability clearly, financial institutions may be
-hesitant to approve agent-initiated transactions, merchants will be exposed to
-unacceptable levels of fraud risk, and users will be reluctant to delegate
-financial authority to agents.
+Essa ambiguidade cria uma crise de confiança. Sem uma estrutura robusta para validar autoridade de agentes e atribuir responsabilidade de forma clara, as instituições financeiras podem ser relutantes em aprovar transações iniciadas por agentes, os comerciantes serão expostos a níveis inaceitáveis de risco de fraude, e os usuários serão relutantes a delegar autoridade financeira a agentes.
 
-### 1.3 The Risk of a Fragmented Ecosystem
+### 1.3 O Risco de um Ecossistema Fragmentado
 
-In the absence of a universally adopted protocol, the industry will inevitably
-move toward a patchwork of proprietary, closed-loop solutions. Large retailers
-might develop bespoke integrations for their specific agents, and payment
-providers might create siloed ecosystems that do not interoperate. This
-fragmentation would have severe negative consequences:
+Na ausência de um protocolo universalmente adotado, a indústria inevitavelmente
+se moverá em direção a um conjunto de soluções proprietárias e fechadas. Grandes varejistas
+podem desenvolver integrações personalizadas para seus agentes específicos, e provedores de
+pagamento podem criar ecossistemas isolados que não interoperam. Esta
+fragmentação teria consequências negativas severas:
 
-- For Users: A confusing and inconsistent experience, where their preferred
-    agent may only work with a limited set of merchants or payment methods.
-- For Merchants: High development and maintenance costs to support multiple,
-    non-standard agent payment integrations, creating a significant barrier to
-    entry for small and medium-sized businesses.
-- For the Payments Ecosystem: An inability to collect common signals across
-    all agent transactions in order to consistently mitigate fraud, leading to
-    higher costs and suppressed transaction approval rates.
+- Para os Usuários: Uma experiência confusa e inconsistente, onde seu agente preferido pode
+    funcionar apenas com um conjunto limitado de comerciantes ou métodos de pagamento.
+- Para os Comerciantes: Custos altos de desenvolvimento e manutenção para suportar múltiplas
+    integrações de pagamentos de agentes não-padrão, criando uma barreira significativa para
+    pequenas e médias empresas.
+- Para o Ecossistema de Pagamentos: Uma incapacidade de coletar sinais comuns em todas as
+    transações de agentes para mitigar consistentemente fraudes, levando a custos mais altos e
+    taxas de aprovação de transações suprimidas.
 
-An open, interoperable protocol is the most viable path forward. It creates a
-common language for all participants. It allows for additional data points to be
-shared about the transaction in a way that wasn’t possible before and ensures
-that any compliant agent can securely transact with any compliant merchant,
-fostering a competitive and innovative marketplace.
+Um protocolo aberto e interoperável é o caminho mais viável para frente. Ele cria uma
+linguagem comum para todos os participantes. Permite que pontos de dados adicionais sejam
+compartilhados sobre a transação de uma forma que não era possível antes e garante
+que qualquer agente compatível possa transacionar com segurança com qualquer comerciante compatível,
+fomentando um mercado competitivo e inovador.
 
-## Section 2: Guiding Principles for a Trusted Agent Economy
+## Seção 2: Princípios Orientadores para uma Economia de Agentes Confiável
 
-The design of this proposed protocol is rooted in a set of core principles
-intended to build a sustainable, secure, and equitable ecosystem for all
-participants. These principles serve as the philosophical foundation for the
-technical architecture that follows.
+O design deste protocolo proposto está enraizado em um conjunto de princípios fundamentais destinados a construir um ecossistema sustentável, seguro e equitativo para todos os participantes. Estes princípios servem como a base filosófica para a arquitetura técnica que se segue.
 
-### 2.1 Openness and Interoperability
+### 2.1 Abertura e Interoperabilidade
 
-This protocol is proposed as a non-proprietary, open extension for existing and
-future agent-to-agent (A2A) and model-context protocol (MCP). The goal is to
-provide a common, interoperable payments layer that can be adopted by any
-ecosystem player. This approach fosters a healthy, competitive environment where
-developers can innovate on agent capabilities, merchants can reach the broadest
-possible audience, and users can choose the combination of agents and services
-that best suits their needs.
+Este protocolo é proposto como uma extensão aberta e não proprietária para protocolos existentes e futuros de agente-para-agente (A2A) e protocolo de contexto de modelo (MCP). O objetivo é fornecer uma camada de pagamentos comum e interoperável que pode ser adotada por qualquer jogador do ecossistema. Esta abordagem fomenta um ambiente saudável e competitivo onde os desenvolvedores podem inovar nas capacidades dos agentes, os comerciantes podem alcançar o público mais amplo possível, e os usuários podem escolher a combinação de agentes e serviços que melhor atenda às suas necessidades.
 
-### 2.2 User Control and Privacy by Design
+### 2.2 Controle do Usuário e Privacidade por Design
 
-The user must always be the ultimate authority. The protocol is designed to
-ensure users have granular control and transparent visibility over their agents'
-activities.
+O usuário deve sempre ser a autoridade máxima. O protocolo é projetado para
+garantir que os usuários tenham controle granular e visibilidade transparente sobre as
+atividades de seus agentes.
 
-Privacy is a core design tenet. The protocol is designed to protect sensitive
-user information, including the content of their conversational prompts and
-personal payment details. Through payload encryption and a role-based
-architecture, agents involved in the shopping process are prevented from
-accessing sensitive payment card industry (PCI) data or other personally
-identifiable information (PII), which is handled exclusively by the specialized
-entities and the secure elements of the payment infrastructure.
+A privacidade é um princípio fundamental de design. O protocolo é projetado para proteger informações sensíveis do usuário, incluindo o conteúdo de seus prompts de conversação e detalhes de pagamento pessoal. Através da criptografia de payload e uma arquitetura baseada em funções, os agentes envolvidos no processo de compras são impedidos de acessar dados de cartão de pagamento sensíveis (PCI) ou outras informações pessoalmente identificáveis (PII), que são tratadas exclusivamente pelas entidades especializadas e os elementos seguros da infraestrutura de pagamento.
 
-### 2.3 Verifiable Intent, Not Inferred Action
+### 2.3 Intenção Verificável, Não Ação Inferida
 
-Trust in an AI Agent system cannot be based only on interpreting the ambiguous,
-probabilistic outputs of a large language model. Transactions must be anchored
-to deterministic, non-repudiable proof of intent from all parties. This
-principle directly addresses the risk of agent "hallucination" and
-misinterpretation.
+A confiança em um sistema de Agente de IA não pode ser baseada apenas na interpretação de saídas ambíguas, probabilísticas de um grande modelo de linguagem. As transações devem ser ancoradas em prova determinística, não-repudiável de intenção de todas as partes. Este princípio aborda diretamente o risco de "alucinação" de agentes e má interpretação.
 
-### 2.4 Clear Transaction Accountability
+### 2.4 Responsabilidade Clara da Transação
 
-For the payments ecosystem to embrace agent commerce, there can be no ambiguity
-regarding transaction accountability. A primary objective of this protocol is to
-provide supporting evidence that helps payment networks establish accountability
-and liability principles. This clarity is table stakes for gaining the
-confidence and participation of merchants, issuers, and payment networks.
+Para que o ecossistema de pagamentos abrace o comércio de agentes, não pode haver ambiguidade
+quanto à responsabilidade da transação. Um objetivo primário deste protocolo é fornecer
+evidência de apoio que ajude as redes de pagamento a estabelecer princípios de responsabilidade
+e responsabilidade. Esta clareza é fundamental para ganhar a confiança e participação de
+comerciantes, emissores e redes de pagamento.
 
-## Section 3: Architectural Overview: A Role-Based Ecosystem for Secure Transactions
+## Seção 3: Visão Geral da Arquitetura: Um Ecossistema Baseado em Funções para Transações Seguras
 
-To achieve its goals of security, interoperability, and clear accountability,
-the proposed protocol defines a role-based architecture. Each actor in the
-ecosystem has a distinct and well-defined set of responsibilities, ensuring a
-separation of concerns that enhances security and simplifies integration.
+Para alcançar seus objetivos de segurança, interoperabilidade e responsabilidade clara,
+o protocolo proposto define uma arquitetura baseada em funções. Cada ator no
+ecossistema tem um conjunto distinto e bem definido de responsabilidades, garantindo uma
+separação de preocupações que aumenta a segurança e simplifica a integração.
 
-### 3.1 The Actors
+### 3.1 Os Atores
 
-The agent payments ecosystem consists of the following key roles:
+O ecossistema de pagamentos de agentes consiste nas seguintes funções principais:
 
-- **The User**: The human individual who initiates a commerce task by
-    delegating it to their Agent. The User is the ultimate source of intent and
-    financial authority.
-- **The User Agent (UA) or Shopping Agent (SA)** : This is the AI Surface that
-    the user directly interacts with. The User Agent (UA) may delegate the
-    commerce task to another AI Agent (say, the Shopping Agent or “SA”). Its
-    primary functions include understanding the user's needs, discovering
-    products, interacting with merchants to build a cart, and obtaining the
-    user's signed authorization to initiate a payment related task.
-- **The User’s Credentials Provider (CP)**: A specialized entity responsible
-    for the secure management and execution of payments credentials (e.g. a
-    digital Wallet). It holds knowledge of the User's available payment methods,
-    gets user consent (if deemed necessary) to share credentials with the SA,
-    selects the optimal payment method based on user preferences and transaction
-    context, and handles payment scenarios like errors, declines and transaction
-    challenges gracefully.
-- **The Remote or Merchant Endpoint (ME)**: A web interface, MCP endpoint or
-    an AI agent operating on behalf of an entity which expects to receive a
-    payment in return for offering products or services. Its objectives are to
-    showcase products/services, provide information, negotiate the contents of a
-    cart with a Shopping Agent, and confirm that it has enough information about
-    the user’s intent to deliver the right products/services.
-- **The Merchant Payment Processor Endpoint (MPP)**: The Merchant Payment
-    Processor (web, API, MCP or AI Agent) may be the same as the Merchant if the
-    Merchant has all the capabilities to fulfill this role. The MPP constructs
-    the txn auth message which can be sent to the payment ecosystem for
-    authorization.
-- **Network and Issuer**: The provider of the payment network and issuer of
-    payment credentials to the human user. The Credentials Provider may need to
-    interact with the network for issuance of specific tokens for AI agent
-    transactions and the Merchant/PSP may submit these transactions for
-    authorization to issuers via the networks.
+- **O Usuário**: O indivíduo humano que inicia uma tarefa de comércio delegando-a ao seu Agente. O Usuário é a fonte máxima de intenção e autoridade financeira.
+- **O Agente do Usuário (UA) ou Agente de Compras (SA)**: Esta é a Superfície de IA que interage diretamente com o usuário. O Agente do Usuário (UA) pode delegar a tarefa de comércio a outro Agente de IA (digamos, o Agente de Compras ou "SA"). Suas funções principais incluem entender as necessidades do usuário, descobrir produtos, interagir com comerciantes para construir um carrinho, e obter a autorização assinada do usuário para iniciar uma tarefa relacionada ao pagamento.
+- **O Provedor de Credenciais do Usuário (CP)**: Uma entidade segura responsável pelo gerenciamento e execução seguros de credenciais de pagamentos (ex.: uma carteira digital). Ela detém conhecimento dos métodos de pagamento disponíveis do Usuário, obtém o consentimento do usuário (se considerado necessário) para compartilhar credenciais com o SA, seleciona o método de pagamento ideal com base nas preferências do usuário e contexto da transação, e lida com cenários de pagamento como erros, declínios e desafios de transação de forma elegante.
+- **O Endpoint Remoto ou do Comerciante (ME)**: Uma interface web, endpoint MCP ou
+    um agente de IA operando em nome de uma entidade que espera receber um
+    pagamento em troca de oferecer produtos ou serviços. Seus objetivos são exibir
+    produtos/serviços, fornecer informações, negociar o conteúdo de um
+    carrinho com um Agente de Compras, e confirmar que tem informações suficientes sobre a
+    intenção do usuário para entregar os produtos/serviços certos.
+- **O Endpoint do Processador de Pagamento do Comerciante (MPP)**: O Processador de Pagamento do Comerciante (web, API, MCP ou Agente de IA) pode ser o mesmo que o Comerciante se o
+    Comerciante tiver todas as capacidades para cumprir esta função. O MPP constrói
+    a mensagem de autorização txn que pode ser enviada ao ecossistema de pagamento para
+    autorização.
+- **Rede e Emissor**: O provedor da rede de pagamento e emissor de
+    credenciais de pagamento para o usuário humano. O Provedor de Credenciais pode precisar
+    interagir com a rede para emissão de tokens específicos para transações de agentes de IA
+    e o Comerciante/PSP pode enviar essas transações para autorização aos emissores via
+    redes.
 
 ![Roles & Responsibilities](assets/roles_responsibilities.png)
 
-### 3.2 The Flow of Trust
+### 3.2 O Fluxo de Confiança
 
-#### 3.2.1 Short Term
+#### 3.2.1 Curto Prazo
 
-In the immediate future, payment ecosystem trust will be established through
-manually curated allow lists of approved agents.
+No futuro imediato, a confiança do ecossistema de pagamentos será estabelecida através de
+listas de permissão aprovadas, curadas manualmente.
 
-- The Shopping Agent may choose to work with a trusted registry of Credential
-    Providers
-- The Credential Provider may choose to work with a trusted registry of
-    Shopping Agents
-- The Shopping Agent will define which merchants it can safely support. This
-    may be through pre-established integrations or real-time discovery via
-    web-crawling or other agentic capabilities. Inversely, merchants may also
-    have a trust registry of Shopping Agents.
+- O Agente de Compras pode escolher trabalhar com um registro confiável de
+    Provedores de Credenciais
+- O Provedor de Credenciais pode escolher trabalhar com um registro confiável de
+    Agentes de Compras
+- O Agente de Compras definirá quais comerciantes ele pode suportar com segurança. Isso
+    pode ser através de integrações pré-estabelecidas ou descoberta em tempo real via
+    web-crawling ou outras capacidades agentic. Inversamente, os comerciantes também podem
+    ter um registro de confiança de Agentes de Compras.
 
-These registries are decentralized and manually curated by the entity owners
-(_e.g. Shopping Agent provider decides that they want to allowlist limited
-popular credentials providers but not any others_). This is less work than the
-industry current approach of point-to-point integrations where there is
-development work required for every bespoke integration.
+Estes registros são descentralizados e curados manualmente pelos proprietários da entidade
+(_ex.: o provedor do Agente de Compras decide que quer permitir lista limitada de
+provedores de credenciais populares mas não outros_). Isso é menos trabalho do que a abordagem atual da indústria de integrações ponto a ponto onde há trabalho de desenvolvimento necessário para cada integração bespoke.
 
 ![Shopping Surface Trust](assets/shopping_surface_trust.png)
 
 ![Merchant Surface Trust](assets/merchant_surface_trust.png)
 
-#### 3.2.2 Long Term
+#### 3.2.2 Longo Prazo
 
-In the long term, we anticipate that both MCP and A2A protocols will incorporate
-additional methods for asserting the identities of both the Agent and the User
-it represents. This will enable Merchant or Shopping Agents to identify a
-Credentials Provider and facilitate the real-time establishment of trust between
-them. Consequently, the Credentials Provider can verify that a Shopping Agent is
-operating on behalf of <johndoe@gmail.com>, and that a specific merchant
-endpoint is genuinely representing a real merchant. Similarly, the Credentials
-Provider should be trusted by the Shopping Agent & Merchant Endpoint to be
-authentic and to appropriately represent <johndoe@gmail.com>. This trust
-framework will leverage and extend established web standards such as HTTPS, DNS
-ownership, mTLS, and API key-exchange.
+A longo prazo, antecipamos que os protocolos MCP e A2A incorporarão
+métodos adicionais para afirmar as identidades tanto do Agente quanto do Usuário
+que ele representa. Isso permitirá que Comerciantes ou Agentes de Compras identifiquem um
+Provedor de Credenciais e facilitem o estabelecimento em tempo real de confiança entre
+eles. Consequentemente, o Provedor de Credenciais pode verificar que um Agente de Compras está
+operando em nome de <johndoe@gmail.com>, e que um endpoint específico de comerciante está
+representando genuinamente um comerciante real. Similarmente, o Provedor de Credenciais deve ser
+confiado pelo Agente de Compras & Endpoint do Comerciante para ser
+autêntico e representar adequadamente <johndoe@gmail.com>. Esta estrutura de confiança irá alavancar e estender padrões web estabelecidos como HTTPS, propriedade de DNS, mTLS, e troca de chave API.
 
 ## Section 4: Trust Anchors: Verifiable Digital Credentials & Mandates
 

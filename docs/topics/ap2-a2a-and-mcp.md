@@ -1,47 +1,32 @@
-# AP2, A2A, and MCP
+# AP2, A2A e MCP
 
-The Agent Payments Protocol (AP2) is designed to be an extension of the
-[Agent-to-Agent (A2A) protocol](https://a2a-protocol.org) and work in concert
-with [Model-Context Protocol (MCP)](https://modelcontextprotocol.org).
+O Protocolo de Pagamentos de Agente (AP2) é projetado para ser uma extensão do protocolo [Agent-to-Agent (A2A)](https://a2a-protocol.org) e trabalhar em conjunto com o [Model-Context Protocol (MCP)](https://modelcontextprotocol.org).
 
 <!-- prettier-ignore-start -->
-!!! abstract "Communication disambiguation"
+!!! abstract "Desambiguação de comunicação"
 
-    -   MCP: Agents communicate with data (APIs)
-    -   A2A: Agents communicate with other Agents (tasks and messages)
-    -   AP2: Agents communicate about payments (mandates)
+    -   MCP: Agentes se comunicam com dados (APIs)
+    -   A2A: Agentes se comunicam com outros Agentes (tarefas e mensagens)
+    -   AP2: Agentes se comunicam sobre pagamentos (mandatos)
 <!-- prettier-ignore-end -->
 
-## AP2 + A2A for Inter-Agent Communication for Payments
+## AP2 + A2A para Comunicação Inter-Agente para Pagamentos
 
-The Agent Payments Protocol (AP2) is designed as an optional extension for
-open-source protocols like A2A and MCP, allowing developers to build upon
-existing work to create a secure and reliable framework for AI-driven payments.
+O Protocolo de Pagamentos de Agente (AP2) é projetado como uma extensão opcional para protocolos de código aberto como A2A e MCP, permitindo que desenvolvedores construam sobre trabalhos existentes para criar uma estrutura segura e confiável para pagamentos orientados por IA.
 
-- AP2 is required to standardize the communication payments details like
-    mandates.
-- A2A is required to standardize intra-agent communication, as soon as you
-    have more than one agent you need A2A.
+- AP2 é necessário para padronizar a comunicação de detalhes de pagamentos como mandatos.
+- A2A é necessário para padronizar a comunicação intra-agente, assim que você tiver mais de um agente, você precisa de A2A.
 
-AP2 directly extends the Agent-to-Agent (A2A) protocol for multi-agent payments
-transactions between actors like Shopping Agents, Merchants, and Credentials
-Providers.
+AP2 estende diretamente o protocolo Agent-to-Agent (A2A) para transações de pagamentos multi-agente entre atores como Agentes de Compras, Comerciantes e Provedores de Credenciais.
 
-## AP2 + MCP for External Resource Interaction
+## AP2 + MCP para Interação com Recursos Externos
 
-MCP is a protocol that standardizes how AI models and agents connect to and
-interact with external resources like tools, APIs, and data sources.
+MCP é um protocolo que padroniza como modelos de IA e agentes se conectam e interagem com recursos externos como ferramentas, APIs e fontes de dados.
 
-Developers can implement their own tools to integrate with providers.
+Desenvolvedores podem implementar suas próprias ferramentas para integrar com provedores.
 
-We are working on MCP servers for AP2.
+Estamos trabalhando em servidores MCP para AP2.
 
 ---
 
-In essence, **A2A and MCP provide the foundational communication and interaction
-layers for AI agents**, enabling them to connect and perform tasks. **AP2 builds
-upon these layers by adding a specialized, secure payments extension**,
-addressing the unique challenges of authorization, authenticity, and
-accountability in AI-driven payments. This allows agents to confidently browse,
-negotiate, buy, and sell on behalf of users by establishing verifiable proof of
-intent and clear accountability within transactions.
+Em essência, **A2A e MCP fornecem as camadas fundamentais de comunicação e interação para agentes de IA**, permitindo que eles se conectem e executem tarefas. **AP2 constrói sobre essas camadas adicionando uma extensão de pagamentos especializada e segura**, abordando os desafios únicos de autorização, autenticidade e responsabilidade em pagamentos orientados por IA. Isso permite que agentes naveguem, negociem, comprem e vendam com confiança em nome dos usuários, estabelecendo prova verificável de intenção e responsabilidade clara nas transações.

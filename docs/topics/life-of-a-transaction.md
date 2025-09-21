@@ -1,62 +1,32 @@
-# Life of a Transaction
+# Vida de uma Transação
 
-The Agent Payments Protocol (AP2) defines clear flows for different user
-scenarios. The two primary modalities are "Human Present" and "Human Not
-Present."
+O Protocolo de Pagamentos de Agente (AP2) define fluxos claros para diferentes cenários de usuário. As duas modalidades principais são "Humano Presente" e "Humano Não Presente".
 
-## Human Present Transaction
+## Transação com Humano Presente
 
-This journey applies when a user delegates a task to an agent and is available
-to authorize the final payment.
+Esta jornada se aplica quando um usuário delega uma tarefa a um agente e está disponível para autorizar o pagamento final.
 
-The typical flow is as follows:
+O fluxo típico é o seguinte:
 
-1. **Setup**: The user may establish a connection between their preferred
-   Shopping Agent and a supported Credentials Provider (e.g., their digital
-   wallet).
-2. **Discovery & Negotiation**: The user gives a shopping task to their agent.
-   The agent interacts with one or more merchants to assemble a cart that
-   satisfies the request.
-3. **Merchant Validates Cart**: The user authorizes a set of items for purchase.
-   The merchant signs the final cart, signaling their commitment to fulfill it.
-4. **Provide Payment Methods**: The Shopping Agent requests an applicable
-   payment method from the Credentials Provider.
-5. **Show Cart**: The agent presents the final, merchant-signed cart and the
-   selected payment method to the user in a trusted interface.
-6. **Sign & Pay**: The user's approval generates a cryptographically signed
-   **Cart Mandate**, which contains the explicit details of the purchase. This
-   mandate is shared with the merchant as evidence. A separate **Payment
-   Mandate** is prepared for the payment network.
-7. **Payment Execution**: The payment details are conveyed to the Credentials
-   Provider and Merchant to complete the transaction.
-8. **Send to Issuer**: The merchant or their processor routes the transaction to
-   the payment network and issuer, appending the Payment Mandate to provide
-   visibility into the agentic nature of the transaction.
-9. **Challenge (If Necessary)**: Any party (issuer, merchant, etc.) can issue a
-   challenge (like 3D Secure). The user must complete the challenge on a trusted
-   surface.
-10. **Authorization**: The issuer approves the payment, and the confirmation is
-    sent to the user and merchant so the order can be fulfilled.
+1. **Configuração**: O usuário pode estabelecer uma conexão entre seu Agente de Compras preferido e um Provedor de Credenciais suportado (por exemplo, sua carteira digital).
+2. **Descoberta e Negociação**: O usuário dá uma tarefa de compra ao seu agente. O agente interage com um ou mais comerciantes para montar um carrinho que satisfaça a solicitação.
+3. **Comerciante Valida Carrinho**: O usuário autoriza um conjunto de itens para compra. O comerciante assina o carrinho final, sinalizando seu compromisso em cumpri-lo.
+4. **Fornecer Métodos de Pagamento**: O Agente de Compras solicita um método de pagamento aplicável do Provedor de Credenciais.
+5. **Mostrar Carrinho**: O agente apresenta o carrinho final assinado pelo comerciante e o método de pagamento selecionado ao usuário em uma interface confiável.
+6. **Assinar e Pagar**: A aprovação do usuário gera um **Mandato do Carrinho** assinado criptograficamente, que contém os detalhes explícitos da compra. Este mandato é compartilhado com o comerciante como evidência. Um **Mandato de Pagamento** separado é preparado para a rede de pagamento.
+7. **Execução do Pagamento**: Os detalhes do pagamento são transmitidos ao Provedor de Credenciais e Comerciante para completar a transação.
+8. **Enviar ao Emissor**: O comerciante ou seu processador roteia a transação para a rede de pagamento e emissor, anexando o Mandato de Pagamento para fornecer visibilidade na natureza agentiva da transação.
+9. **Desafio (Se Necessário)**: Qualquer parte (emissor, comerciante, etc.) pode emitir um desafio (como 3D Secure). O usuário deve completar o desafio em uma superfície confiável.
+10. **Autorização**: O emissor aprova o pagamento, e a confirmação é enviada ao usuário e comerciante para que o pedido possa ser cumprido.
 
-## Human Not Present Transaction
+## Transação com Humano Não Presente
 
-This journey is for scenarios where the user wants the agent to proceed with a
-payment in their absence (e.g., "buy these shoes when the price drops below
-$100").
+Esta jornada é para cenários onde o usuário quer que o agente proceda com um pagamento em sua ausência (por exemplo, "compre estes sapatos quando o preço cair abaixo de $100").
 
-The key differences from the Human Present flow are:
+As principais diferenças do fluxo com Humano Presente são:
 
-1. **Intent is Captured**: Instead of approving a final cart, the user approves
-   the agent's _understanding_ of their intent. The user's in-session
-   authentication (e.g., biometric) creates a signed **Intent Mandate**.
-2. **Intent Mandate is Used**: This mandate, which includes the natural language
-   description of the user's goal, is shared with the merchant, who can then
-   decide if they can fulfill the request.
-3. **Merchant Can Force User Confirmation**: If the merchant is unsure about
-   their ability to fulfill the request based on the Intent Mandate, they can
-   require the user to return to the session to confirm details. This might
-   involve the user selecting from a set of final options (creating a Cart
-   Mandate) or providing more information (updating the Intent Mandate).
+1. **Intenção é Capturada**: Em vez de aprovar um carrinho final, o usuário aprova a _compreensão_ do agente de sua intenção. A autenticação em sessão do usuário (por exemplo, biométrica) cria um **Mandato de Intenção** assinado.
+2. **Mandato de Intenção é Usado**: Este mandato, que inclui a descrição em linguagem natural do objetivo do usuário, é compartilhado com o comerciante, que pode então decidir se pode cumprir a solicitação.
+3. **Comerciante Pode Forçar Confirmação do Usuário**: Se o comerciante não tiver certeza sobre sua capacidade de cumprir a solicitação com base no Mandato de Intenção, eles podem exigir que o usuário retorne à sessão para confirmar detalhes. Isso pode envolver o usuário selecionando de um conjunto de opções finais (criando um Mandato do Carrinho) ou fornecendo mais informações (atualizando o Mandato de Intenção).
 
-This ensures merchants have confidence in the user's intent while still allowing
-for autonomous execution of tasks.
+Isso garante que os comerciantes tenham confiança na intenção do usuário, ao mesmo tempo em que permite a execução autônoma de tarefas.

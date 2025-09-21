@@ -1,70 +1,41 @@
-# Core Concepts
+# Conceitos Principais
 
-The Agent Payments Protocol (AP2) is built on a foundation of core principles
-and a role-based architecture designed to create a secure, interoperable, and
-fair ecosystem.
+O Protocolo de Pagamentos de Agente (AP2) é construído sobre uma base de princípios fundamentais e uma arquitetura baseada em funções projetada para criar um ecossistema seguro, interoperável e justo.
 
-## Guiding Principles
+## Princípios Orientadores
 
-- **Openness and Interoperability**: AP2 is an open, non-proprietary extension
-    for agent-to-agent protocols, fostering a competitive environment where any
-    compliant agent can work with any compliant merchant.
-- **User Control and Privacy**: The user is always the ultimate authority. The
-    protocol is designed with privacy at its core, using a role-based
-    architecture and encryption to protect sensitive user data and payment
-    details.
-- **Verifiable Intent, Not Inferred Action**: Trust is anchored to
-    deterministic, non-repudiable proof of intent from the user, directly
-    addressing the risk of agent error or "hallucination."
-- **Clear Transaction Accountability**: For the payments ecosystem to embrace
-    agentic payments, there can be no ambiguity regarding transaction
-    accountability. The protocol provides supporting evidence that helps payment
-    networks establish clear and fair principles for accountability and dispute
-    resolution. By creating a non-repudiable, cryptographic audit trail for
-    every transaction, the framework provides the evidence necessary to resolve
-    disputes confidently.
+- **Abertura e Interoperabilidade**: AP2 é uma extensão aberta e não proprietária para protocolos agente-a-agente, promovendo um ambiente competitivo onde qualquer agente compatível pode trabalhar com qualquer comerciante compatível.
+- **Controle e Privacidade do Usuário**: O usuário é sempre a autoridade máxima. O protocolo é projetado com privacidade em seu núcleo, usando uma arquitetura baseada em funções e criptografia para proteger dados sensíveis do usuário e detalhes de pagamento.
+- **Intenção Verificável, Não Ação Inferida**: A confiança é ancorada em prova determinística e irrefutável de intenção do usuário, abordando diretamente o risco de erro do agente ou "alucinação".
+- **Responsabilidade Clara da Transação**: Para que o ecossistema de pagamentos abrace pagamentos agentivos, não pode haver ambiguidade quanto à responsabilidade da transação. O protocolo fornece evidências de suporte que ajudam as redes de pagamento a estabelecer princípios claros e justos para responsabilidade e resolução de disputas. Ao criar um rastro de auditoria criptográfico irrefutável para cada transação, a estrutura fornece as evidências necessárias para resolver disputas com confiança.
 
-## A Role-Based Architecture
+## Uma Arquitetura Baseada em Funções
 
-The protocol defines a clear separation of concerns by assigning distinct roles
-to each actor in the ecosystem:
+O protocolo define uma clara separação de preocupações atribuindo funções distintas a cada ator no ecossistema:
 
-- **The User**: The individual who delegates a payments task to an agent.
-- **User Agent (UA) / Shopping Agent (SA)**: The AI surface the user interacts
-    with (e.g., Gemini, ChatGPT). It understands the user's needs, builds a
-    cart, and obtains the user's authorization.
-- **Credentials Provider (CP)**: A specialized entity (e.g., a digital wallet)
-    that securely manages the user's payment credentials and methods.
-- **Merchant Endpoint (ME)**: An interface or agent operating on behalf of the
-    merchant to showcase products and negotiate a cart.
-- **Merchant Payment Processor Endpoint (MPP)**: The entity that constructs the final
-    transaction authorization message for the payment network.
-- **Network and Issuer**: The payment network and the financial institution
-    that issued the user's payment credentials.
+- **O Usuário**: O indivíduo que delega uma tarefa de pagamentos a um agente.
+- **Agente do Usuário (UA) / Agente de Compras (SA)**: A superfície de IA com a qual o usuário interage (por exemplo, Gemini, ChatGPT). Ele entende as necessidades do usuário, constrói um carrinho e obtém a autorização do usuário.
+- **Provedor de Credenciais (CP)**: Uma entidade especializada (por exemplo, uma carteira digital) que gerencia com segurança as credenciais e métodos de pagamento do usuário.
+- **Ponto Final do Comerciante (ME)**: Uma interface ou agente operando em nome do comerciante para exibir produtos e negociar um carrinho.
+- **Ponto Final do Processador de Pagamento do Comerciante (MPP)**: A entidade que constrói a mensagem final de autorização de transação para a rede de pagamento.
+- **Rede e Emissor**: A rede de pagamento e a instituição financeira que emitiu as credenciais de pagamento do usuário.
 
-## Trust Anchors: Verifiable Digital Credentials (VDCs)
+## Âncoras de Confiança: Credenciais Digitais Verificáveis (VDCs)
 
-The central innovation of AP2 is the use of **verifiable digital credentials (VDCs)** to
-engineer trust. VDCs are tamper-evident, portable, and cryptographically signed
-digital objects that serve as the building blocks of a transaction. They are the
-language of trust exchanged between agents.
+A inovação central do AP2 é o uso de **credenciais digitais verificáveis (VDCs)** para engenhar confiança. VDCs são objetos digitais à prova de adulteração, portáteis e assinados criptograficamente que servem como blocos de construção de uma transação. Elas são a linguagem de confiança trocada entre agentes.
 
-There are three primary types of VDCs:
+Existem três tipos principais de VDCs:
 
-### 1. The Cart Mandate (Human Present)
+### 1. O Mandato do Carrinho (Humano Presente)
 
-The Cart Mandate is the foundational credential used when the user is present to
-authorize a purchase. It is generated by the Merchant and cryptographically
-signed by the user (typically via their device), binding their identity and
-authorization to a specific transaction.
+O Mandato do Carrinho é a credencial fundamental usada quando o usuário está presente para autorizar uma compra. Ele é gerado pelo Comerciante e assinado criptograficamente pelo usuário (normalmente via seu dispositivo), vinculando sua identidade e autorização a uma transação específica.
 
-A Cart Mandate contains:
+Um Mandato do Carrinho contém:
 
-- Verifiable identities for the payer and payee.
-- A tokenized representation of the specific payment method.
-- The final, exact transaction details (products, destination, amount,
-    currency).
-- A container for risk-related signals.
+- Identidades verificáveis para o pagador e recebedor.
+- Uma representação tokenizada do método de pagamento específico.
+- Os detalhes finais e exatos da transação (produtos, destino, valor, moeda).
+- Um contêiner para sinais relacionados ao risco.
 
 <div class="grid cards">
     <figure markdown="span" class="card thumb">
@@ -81,25 +52,18 @@ A Cart Mandate contains:
     </figure>
 </div>
 
-### 2. The User-Signed Intent Mandate (Human Not Present)
+### 2. O Mandato de Intenção Assinado pelo Usuário (Humano Não Presente)
 
-The User-Signed Intent Mandate is used for scenarios where the user is not
-present at the time of the transaction (e.g., "buy these tickets when they go on
-sale"). It is generated by the Shopping Agent and signed by the user, granting
-the agent authority to act within defined constraints.
+O Mandato de Intenção Assinado pelo Usuário é usado para cenários onde o usuário não está presente no momento da transação (por exemplo, "compre estes ingressos quando eles forem colocados à venda"). Ele é gerado pelo Agente de Compras e assinado pelo usuário, concedendo ao agente autoridade para agir dentro de restrições definidas.
 
-A User-Signed Intent Mandate contains:
+Um Mandato de Intenção Assinado pelo Usuário contém:
 
-- Verifiable identities for the payer and payee.
-- A list or category of authorized payment methods.
-- The shopping intent, including parameters like product categories, and other
-    criteria.
-- The agent's natural language understanding of the user's prompt.
-- An expiration time (Time-to-Live).
+- Identidades verificáveis para o pagador e recebedor.
+- Uma lista ou categoria de métodos de pagamento autorizados.
+- A intenção de compra, incluindo parâmetros como categorias de produtos e outros critérios.
+- A compreensão em linguagem natural do agente do prompt do usuário.
+- Um tempo de expiração (Time-to-Live).
 
-### 3. The Payment Mandate
+### 3. O Mandato de Pagamento
 
-This is a separate VDC shared with the payment network and issuer. Its purpose is
-to provide visibility into the agentic nature of the transaction, helping the
-network and issuer build trust and assess risk. It contains signals for AI agent
-presence and the transaction modality (Human Present vs. Not Present).
+Esta é uma VDC separada compartilhada com a rede de pagamento e emissor. Seu propósito é fornecer visibilidade na natureza agentiva da transação, ajudando a rede e o emissor a construir confiança e avaliar risco. Ela contém sinais para presença de agente de IA e a modalidade da transação (Humano Presente vs. Não Presente).

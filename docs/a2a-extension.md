@@ -1,32 +1,31 @@
-# A2A Extension for AP2
+# Extensão A2A para AP2
 
 !!! info
 
-    This is an [Agent2Agent (A2A) extension](https://a2a-protocol.org/latest/topics/extensions/)
-    implementing the Agent Payments Protocol (AP2).
+    Esta é uma [extensão Agent2Agent (A2A)](https://a2a-protocol.org/latest/topics/extensions/)
+    implementando o Protocolo de Pagamentos de Agentes (AP2).
 
-    `v0.1-alpha` (see [roadmap](roadmap.md))
+    `v0.1-alpha` (veja [roteiro](roadmap.md))
 
-## Extension URI
+## URI da Extensão
 
-The URI for this extension is
+A URI para esta extensão é
 `https://github.com/google-agentic-commerce/ap2/tree/v0.1`.
 
-Agents that support the AP2 extension MUST use this URI.
+Agentes que suportam a extensão AP2 DEVEM usar esta URI.
 
-## Agent AP2 Role
+## Função do Agente AP2
 
-Every Agent that supports the AP2 extension MUST perform at least one Role from
-the AP2 specification. This role is specified in the
-[AgentCard](#agentcard-extension-object).
+Cada Agente que suporta a extensão AP2 DEVE executar pelo menos uma Função da
+especificação AP2. Esta função é especificada no
+[AgentCard](#objeto-de-extensao-agentcard).
 
-## AgentCard Extension Object
+## Objeto de Extensão AgentCard
 
-Agents that support the AP2 extension MUST advertise their support for an
-AgentCard extension, using the [Extension URI](#extension-uri).
+Agentes que suportam a extensão AP2 DEVEM anunciar seu suporte para uma
+extensão AgentCard, usando a [URI da Extensão](#uri-da-extensao).
 
-The `params` used in the `AgentExtension` MUST adhere to the following JSON
-schema:
+Os `params` usados no `AgentExtension` DEVEM aderir ao seguinte esquema JSON:
 
 ```json
 {
@@ -48,7 +47,7 @@ schema:
 }
 ```
 
-This schema is also expressed by the following Pydantic type definition:
+Este esquema também é expresso pela seguinte definição de tipo Pydantic:
 
 ```py
 AP2Role = "merchant" | "shopper" | "credentials-provider" | "payment-processor"
@@ -59,11 +58,11 @@ class AP2ExtensionParameters(BaseModel):
 
 ```
 
-Agents that perform the `"merchant"` role SHOULD set the AP2 extension to
-required. This indicates that clients must be able to use the AP2 extension to
-pay for services offered by the agent.
+Agentes que executam a função `"merchant"` DEVEM definir a extensão AP2 como
+obrigatória. Isso indica que os clientes devem ser capazes de usar a extensão AP2 para
+pagar pelos serviços oferecidos pelo agente.
 
-The following listing shows an AgentCard declaring AP2 extension support.
+A listagem a seguir mostra um AgentCard declarando suporte à extensão AP2.
 
 ```json
 {
@@ -97,25 +96,23 @@ The following listing shows an AgentCard declaring AP2 extension support.
 }
 ```
 
-## AP2 Data Type Containers
+## Contêineres de Tipos de Dados AP2
 
-The following sections describe how AP2 data types are encapsulated into A2A
-data types.
+As seções a seguir descrevem como os tipos de dados AP2 são encapsulados em tipos de dados A2A.
 
-### IntentMandate Message
+### Mensagem IntentMandate
 
-To provide an `IntentMandate`, the agent MUST create an IntentMandate Message.
-An IntentMandate Message is an A2A `Message` profile with the following
-requirements.
+Para fornecer um `IntentMandate`, o agente DEVE criar uma Mensagem IntentMandate.
+Uma Mensagem IntentMandate é um perfil de `Message` A2A com os seguintes
+requisitos.
 
-The Message MUST contain a DataPart that contains a key of
-`ap2.mandates.IntentMandate` and a value that adheres to the `IntentMandate`
-schema.
+A Mensagem DEVE conter uma DataPart que contém uma chave de
+`ap2.mandates.IntentMandate` e um valor que adere ao esquema `IntentMandate`.
 
-The Message MAY contain a DataPart that contains a key of `risk_data`, where the
-value contains implementation-defined risk signals.
+A Mensagem PODE conter uma DataPart que contém uma chave de `risk_data`, onde o
+valor contém sinais de risco definidos pela implementação.
 
-The following listing shows the JSON rendering of an IntentMandate Message.
+A listagem a seguir mostra a renderização JSON de uma Mensagem IntentMandate.
 
 ```json
 {
@@ -141,24 +138,24 @@ The following listing shows the JSON rendering of an IntentMandate Message.
 }
 ```
 
-### CartMandate Artifact
+### Artefato CartMandate
 
-To initiate a request for payment, a Merchant Agent MUST produce a CartMandate
-Artifact. The CartMandate Artifact is a profile of an A2A Artifact. A Merchant
-Agent MUST NOT produce a CartMandate until all required payment-impacting
-information has been collected. Payment-impacting information is any information
-provided by a client that changes the CartContents, and therefore the price to
-be paid. For example, a shipping address may change the price for shipping that
-is included in the CartContents.
+Para iniciar uma solicitação de pagamento, um Agente Comerciante DEVE produzir um Artefato CartMandate.
+O Artefato CartMandate é um perfil de um Artefato A2A. Um Agente Comerciante
+NÃO DEVE produzir um CartMandate até que todas as informações impactantes no pagamento
+tenham sido coletadas. Informações impactantes no pagamento são quaisquer informações
+fornecidas por um cliente que alteram o CartContents, e portanto o preço a
+ser pago. Por exemplo, um endereço de entrega pode alterar o preço do frete que
+está incluído no CartContents.
 
-The CartMandate Artifact MUST have a DataPart that contains a key of
-`ap2.mandates.CartMandate` with a corresponding object that adheres to the
-CartMandate schema.
+O Artefato CartMandate DEVE ter uma DataPart que contém uma chave de
+`ap2.mandates.CartMandate` com um objeto correspondente que adere ao esquema
+CartMandate.
 
-The CartMandate Artifact MAY include a DataPart that contains a key of
-`risk_data` and a value that contains implementation-defined risk signal data.
+O Artefato CartMandate PODE incluir uma DataPart que contém uma chave de
+`risk_data` e um valor que contém dados de sinal de risco definidos pela implementação.
 
-The following listing shows the JSON representation of a CartMandate Artifact.
+A listagem a seguir mostra a representação JSON de um Artefato CartMandate.
 
 ```json
 {
@@ -228,18 +225,18 @@ The following listing shows the JSON representation of a CartMandate Artifact.
 }
 ```
 
-### PaymentMandate Message
+### Mensagem PaymentMandate
 
-To provide a PaymentMandate to an agent, the client MUST construct a
-PaymentMandate Message. A PaymentMandate Message is a profile of an A2A Message.
+Para fornecer um PaymentMandate a um agente, o cliente DEVE construir uma
+Mensagem PaymentMandate. Uma Mensagem PaymentMandate é um perfil de uma Mensagem A2A.
 
-A PaymentMandate Message MUST contain a DataPart that has a key of
-`ap2.mandates.PaymentMandate` and the value MUST be an object that adheres to
-the `PaymentMandate` schema.
+Uma Mensagem PaymentMandate DEVE conter uma DataPart que tem uma chave de
+`ap2.mandates.PaymentMandate` e o valor DEVE ser um objeto que adere ao
+esquema `PaymentMandate`.
 
-A PaymentMandate Message MAY contain other Parts.
+Uma Mensagem PaymentMandate PODE conter outras Partes.
 
-The following listing shows a JSON rendering of a PaymentMandate Message.
+A listagem a seguir mostra uma renderização JSON de uma Mensagem PaymentMandate.
 
 ```json
 {
