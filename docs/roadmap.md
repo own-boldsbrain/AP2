@@ -1,33 +1,15 @@
-# AP2 Roadmap
+# Roteiro AP2
 
-The development and rollout of the protocol are envisioned in a phased approach,
-allowing the ecosystem to build, test, and adopt capabilities incrementally.
+O desenvolvimento e implementação do protocolo são previstos em uma abordagem faseada, permitindo que o ecossistema construa, teste e adote capacidades de forma incremental.
 
-**V0.1: (September 2025)** The initial specification focuses on establishing the
-core architecture and enabling the most common use cases. Key features include:
-Support for "pull" payment methods (e.g., credit/debit cards) Well-defined data
-payloads to support transparent accountability based on the VDC framework Support
-for human-present scenarios Support for user and merchant-initiated step-up
-challenges Detailed sequence diagram and reference implementation using A2A
-protocol
+**V0.1: (Setembro 2025)** A especificação inicial foca em estabelecer a arquitetura principal e habilitar os casos de uso mais comuns. Recursos principais incluem: Suporte para métodos de pagamento "pull" (por exemplo, cartões de crédito/débito) Cargas de dados bem definidas para suportar responsabilidade transparente baseada no framework VDC Suporte para cenários humano-presente Suporte para desafios de escalonamento iniciados por usuário e comerciante Diagrama de sequência detalhado e implementação de referência usando o protocolo A2A
 
-- [x] AP2 specifications v0.1 (human present, pull payments)
-- [ ] AP2 A2A extension v0.1
-- [ ] AP2 MCP server v0.1
-- [ ] AP2 python SDK v0.1
-- [ ] AP2 android SDK v0.1
+- [x] Especificações AP2 v0.1 (humano presente, pagamentos pull)
+- [ ] Extensão A2A AP2 v0.1
+- [ ] Servidor MCP AP2 v0.1
+- [ ] SDK Python AP2 v0.1
+- [ ] SDK Android AP2 v0.1
 
-**V1.x:** Subsequent versions will expand the protocol's capabilities based on
-community feedback and evolving needs. Potential areas of focus include: Full
-support for "push" payments and all payment methods (e.g., real-time bank
-transfers, e-wallets etc.) Standardized flows for recurring payments and
-subscriptions Support for human-not-present scenarios Detailed sequence diagrams
-for MCP-based implementations
+**V1.x:** Versões subsequentes expandirão as capacidades do protocolo com base no feedback da comunidade e necessidades em evolução. Áreas potenciais de foco incluem: Suporte completo para pagamentos "push" e todos os métodos de pagamento (por exemplo, transferências bancárias em tempo real, carteiras eletrônicas etc.) Fluxos padronizados para pagamentos recorrentes e assinaturas Suporte para cenários humano-não-presente Diagramas de sequência detalhados para implementações baseadas em MCP
 
-**Long-Term Vision:** Longer term, we plan the protocol to incorporate more
-intelligence and flexibility, including: Native support for complex,
-multi-merchant transaction topologies Support for real-time negotiations between
-buyer and seller agents We believe that a collaborative approach is essential to
-creating a protocol that is robust, secure, and meets the diverse needs of the
-entire ecosystem. We actively seek feedback and critique on the github
-repository through issues and discussions.
+**Visão de Longo Prazo:** A longo prazo, planejamos que o protocolo incorpore mais inteligência e flexibilidade, incluindo: Suporte nativo para topologias de transação complexas e multi-comerciantes Suporte para negociações em tempo real entre agentes compradores e vendedores Acreditamos que uma abordagem colaborativa é essencial para criar um protocolo que seja robusto, seguro e atenda às diversas necessidades de todo o ecossistema. Buscamos ativamente feedback e crítica no repositório github através de issues e discussões.
