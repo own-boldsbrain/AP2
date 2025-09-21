@@ -1,50 +1,27 @@
-# AP2 Overview
+# Visão Geral do AP2
 
-The evolution of digital interaction is entering a new phase, moving beyond
-direct human interaction with websites and apps to conversational and delegated
-task execution by AI agents. In commerce, this means agents will manage
-everything from routine purchases to complex product research and price
-negotiation.
+A evolução da interação digital está entrando em uma nova fase, indo além da interação humana direta com sites e aplicativos para execução de tarefas conversacionais e delegadas por agentes de IA. No comércio, isso significa que agentes gerenciarão tudo, desde compras rotineiras até pesquisa complexa de produtos e negociação de preços.
 
-This new era of **agentic commerce** promises a hyper-personalized and
-frictionless shopping experience for users while providing merchants with new,
-intelligent channels to reach customers.
+Esta nova era do **comércio agentivo** promete uma experiência de compra hiperpersonalizada e sem atrito para os usuários, ao mesmo tempo em que fornece aos comerciantes novos canais inteligentes para alcançar clientes.
 
-## The Foundational Gap: A Crisis of Trust
+## A Lacuna Fundamental: Uma Crise de Confiança
 
-Despite its promise, the rise of agentic commerce exposes a critical
-vulnerability: today's payment systems were designed for direct human
-interaction. When an autonomous agent initiates a payment, fundamental questions
-arise that current systems cannot answer:
+Apesar de sua promessa, o surgimento do comércio agentivo expõe uma vulnerabilidade crítica: os sistemas de pagamento de hoje foram projetados para interação humana direta. Quando um agente autônomo inicia um pagamento, surgem questões fundamentais que os sistemas atuais não podem responder:
 
-- **Authorization & Auditability**: What verifiable proof exists that the user
-    granted the agent specific authority to make a particular purchase?
-- **Authenticity of Intent**: How can a merchant be certain that an agent's
-    request accurately reflects the user's true intent, free from errors or AI
-    "hallucinations"?
-- **Accountability**: In the event of a fraudulent or erroneous transaction,
-    who is accountable? The user, the agent's developer, the merchant, or the
-    payment network?
+- **Autorização e Auditabilidade**: Que prova verificável existe de que o usuário concedeu ao agente autoridade específica para fazer uma compra particular?
+- **Autenticidade da Intenção**: Como um comerciante pode ter certeza de que a solicitação de um agente reflete com precisão a verdadeira intenção do usuário, livre de erros ou "alucinações" de IA?
+- **Responsabilidade**: No caso de uma transação fraudulenta ou errônea, quem é responsável? O usuário, o desenvolvedor do agente, o comerciante ou a rede de pagamento?
 
-This ambiguity creates a crisis of trust that could hinder adoption, expose
-merchants to fraud, and lead users to hesitate before delegating financial
-authority to agents.
+Essa ambiguidade cria uma crise de confiança que poderia impedir a adoção, expor comerciantes à fraude e levar usuários a hesitarem antes de delegar autoridade financeira a agentes.
 
-## The Risk of a Fragmented Ecosystem
+## O Risco de um Ecossistema Fragmentado
 
-Without a common standard, the industry risks developing a patchwork of
-proprietary, closed-loop solutions. This would create a confusing experience for
-users, high integration costs for merchants (especially small businesses), and
-prevent the payments ecosystem from consistently mitigating fraud.
+Sem um padrão comum, a indústria corre o risco de desenvolver um patchwork de soluções proprietárias e fechadas. Isso criaria uma experiência confusa para os usuários, altos custos de integração para comerciantes (especialmente pequenas empresas) e impediria o ecossistema de pagamentos de mitigar consistentemente a fraude.
 
-## The Solution: An Open, Interoperable Protocol
+## A Solução: Um Protocolo Aberto e Interoperável
 
-The **Agent Payments Protocol (AP2)** is proposed as a non-proprietary, open
-extension for existing agent-to-agent (A2A) and model-context (MCP) protocols.
+O **Protocolo de Pagamentos de Agente (AP2)** é proposto como uma extensão aberta e não proprietária para protocolos existentes agente-a-agente (A2A) e modelo-contexto (MCP).
 
-It creates a common, trusted language for all participants, ensuring that any
-compliant agent can securely transact with any compliant merchant. By
-establishing a secure and reliable framework for AI-driven commerce, AP2 paves
-the way for a competitive and innovative marketplace.
+Ele cria uma linguagem comum e confiável para todos os participantes, garantindo que qualquer agente compatível possa transacionar com segurança com qualquer comerciante compatível. Ao estabelecer uma estrutura segura e confiável para o comércio orientado por IA, AP2 abre caminho para um mercado competitivo e inovador.
 
 ![Agent Payments Protocol Graphic](../assets/ap2_graphic.png)

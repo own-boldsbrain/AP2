@@ -1,49 +1,20 @@
-# Privacy and Security
+# Privacidade e Segurança
 
-The Agent Payments Protocol (AP2) is designed with privacy and security as
-foundational pillars. By re-imagining the flow of transactions for an AI-native
-world, the protocol introduces new safeguards while adapting existing security
-measures.
+O Protocolo de Pagamentos de Agente (AP2) é projetado com privacidade e segurança como pilares fundamentais. Ao reimaginar o fluxo de transações para um mundo nativo de IA, o protocolo introduz novas salvaguardas ao mesmo tempo em que adapta medidas de segurança existentes.
 
-## Core Principles
+## Princípios Fundamentais
 
-- **User Control and Privacy by Design**: The user must always be the ultimate
-    authority. The protocol is architected to give users granular control and
-    transparent visibility over their agents' financial activities. Privacy is a
-    core design tenet, not an afterthought. The protocol is designed to protect
-    sensitive user information, including conversational prompts and personal
-    payment details.
+- **Controle do Usuário e Privacidade por Design**: O usuário deve sempre ser a autoridade máxima. O protocolo é arquitetado para dar aos usuários controle granular e visibilidade transparente sobre as atividades financeiras de seus agentes. A privacidade é um princípio fundamental de design, não uma reflexão tardia. O protocolo é projetado para proteger informações sensíveis do usuário, incluindo prompts conversacionais e detalhes pessoais de pagamento.
 
-- **Role-Based Architecture**: A key security feature is the separation of
-    concerns among the different actors (Shopping Agent, Credentials Provider,
-    Merchant). This architecture ensures that agents involved in the shopping
-    and discovery process are prevented from accessing sensitive payment card
-    industry (PCI) data or other personally identifiable information (PII). This
-    sensitive data is handled exclusively by specialized entities like the
-    Credentials Provider and the secure elements of the existing payment
-    infrastructure.
+- **Arquitetura Baseada em Funções**: Um recurso de segurança chave é a separação de preocupações entre os diferentes atores (Agente de Compras, Provedor de Credenciais, Comerciante). Esta arquitetura garante que agentes envolvidos no processo de compra e descoberta sejam impedidos de acessar dados sensíveis da indústria de cartões de pagamento (PCI) ou outras informações pessoalmente identificáveis (PII). Estes dados sensíveis são tratados exclusivamente por entidades especializadas como o Provedor de Credenciais e os elementos seguros da infraestrutura de pagamento existente.
 
-## A New Risk Landscape
+## Um Novo Cenário de Risco
 
-The shift from direct human interaction to delegated agentic payments introduces
-new risk factors that the protocol is designed to mitigate over time. All
-participants in the ecosystem must re-evaluate how they establish trust and
-manage risk. Key considerations include:
+A mudança da interação humana direta para pagamentos agentivos delegados introduz novos fatores de risco que o protocolo é projetado para mitigar ao longo do tempo. Todos os participantes no ecossistema devem reavaliar como estabelecem confiança e gerenciam risco. Considerações-chave incluem:
 
-- **User Asynchronicity**: The user may not be present for the entire payment
-    journey, requiring robust, verifiable mandates to stand in for their
-    real-time approval.
-- **Delegated Trust**: Actors must now trust an agent to initiate a payment on
-    a user's behalf, making the verification of the agent's identity and
-    authority critical.
-- **Indirect Trust Establishment**: The Credentials Provider may not have a
-    direct relationship with the merchant and must rely on the Shopping Agent to
-    bridge that trust gap securely.
-- **Agent Identity**: The Shopping Agent's identity becomes a new, critical
-    signal for fraud and risk analysis, requiring new methods of verification.
+- **Assincronia do Usuário**: O usuário pode não estar presente durante toda a jornada de pagamento, exigindo mandatos robustos e verificáveis para substituir sua aprovação em tempo real.
+- **Confiança Delegada**: Os atores devem agora confiar em um agente para iniciar um pagamento em nome do usuário, tornando a verificação da identidade e autoridade do agente crítica.
+- **Estabelecimento de Confiança Indireta**: O Provedor de Credenciais pode não ter um relacionamento direto com o comerciante e deve confiar no Agente de Compras para preencher essa lacuna de confiança de forma segura.
+- **Identidade do Agente**: A identidade do Agente de Compras se torna um novo sinal crítico para análise de fraude e risco, exigindo novos métodos de verificação.
 
-The protocol provides a common language for sharing risk signals between
-entities, allowing for a more holistic and secure assessment of each
-transaction. Existing risk systems that merchants, networks, and issuers have in
-place can be augmented with new data points from the agentic flow, such as the
-`PaymentMandate`, ensuring backward compatibility and enhancing security.
+O protocolo fornece uma linguagem comum para compartilhar sinais de risco entre entidades, permitindo uma avaliação mais holística e segura de cada transação. Sistemas de risco existentes que comerciantes, redes e emissores têm em vigor podem ser aumentados com novos pontos de dados do fluxo agentivo, como o `PaymentMandate`, garantindo compatibilidade retroativa e aprimorando a segurança.
