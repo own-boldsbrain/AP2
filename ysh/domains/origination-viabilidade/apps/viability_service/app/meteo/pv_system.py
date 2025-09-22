@@ -264,8 +264,6 @@ def simplified_estimate(
             'data_source': "Simplified Estimate" if insolation['is_estimated'] else "NASA POWER Annual",
             'mount_type': "fixed",
             'tilt': "optimal",
-            'azimuth': "optimal"
-        }
-    }            'azimuth': "optimal"
-        }
+            'azimuth': "optimal",
+        },
     }

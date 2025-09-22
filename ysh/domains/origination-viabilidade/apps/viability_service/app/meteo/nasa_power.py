@@ -215,7 +215,7 @@ def get_annual_insolation(latitude: float, longitude: float) -> Dict[str, float]
         return {
             'ghi_annual': round(ghi_annual, 1),
             'dni_annual': round(dni_annual, 1),
-            'is_estimated': False
+            'is_estimated': False,
         }
     except Exception as e:
         print(f"Erro ao calcular insolação anual: {str(e)}")
@@ -223,6 +223,5 @@ def get_annual_insolation(latitude: float, longitude: float) -> Dict[str, float]
         return {
             'ghi_annual': 1825.0,  # 5 kWh/m²/dia * 365 dias
             'dni_annual': 2007.5,  # 5.5 kWh/m²/dia * 365 dias
-            'is_estimated': True
-        }            'is_estimated': True
+            'is_estimated': True,
         }

@@ -35,16 +35,17 @@ async def nats_lifespan(app) -> AsyncIterator[None]:
             await nc.drain()
 
 
-async def publish_completed(payload: dict):
+async def publish_completed(payload: dict) -> bool:
     """Publica um evento de viabilidade concluída."""
-    if nc:
-        try:
-            await nc.publish(SUBJECT_COMPLETED, json.dumps(payload).encode())
-            print(f"Publicado evento {SUBJECT_COMPLETED}: {payload}")
-            return True
-        except Exception as e:
-            print(f"Erro ao publicar evento {SUBJECT_COMPLETED}: {e}")
-            return False
-    return False            print(f"Erro ao publicar evento {SUBJECT_COMPLETED}: {e}")
-            return False
-    return False
+
+    if not nc:
+        return False
+
+    try:
+        await nc.publish(SUBJECT_COMPLETED, json.dumps(payload).encode())
+    except Exception as exc:  # pragma: no cover - defensive logging
+        print(f"Erro ao publicar evento {SUBJECT_COMPLETED}: {exc}")
+        return False
+
+    print(f"Publicado evento {SUBJECT_COMPLETED}: {payload}")
+    return True

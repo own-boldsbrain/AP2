@@ -94,5 +94,5 @@ def evaluate(in_: EconomicsIn) -> EconomicsOut:
         roi_pct=round(roi, 1),
         payback_years=float(payback),
         tir_pct=round(tir, 1),
-        cashflow=[round(x, 2) for x in cash]
-    )    )
+        cashflow=[round(x, 2) for x in cash],
+    )
