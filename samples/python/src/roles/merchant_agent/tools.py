@@ -22,36 +22,36 @@ import base64
 import json
 import logging
 
-from pydantic import ValidationError
 from typing import Any
 
 from a2a.server.tasks.task_updater import TaskUpdater
-from a2a.types import DataPart
-from a2a.types import Part
-from a2a.types import Task
-from a2a.types import TextPart
-
-from . import storage
-from ap2.types.contact_picker import ContactAddress
-from ap2.types.mandate import CART_MANDATE_DATA_KEY
-from ap2.types.mandate import PAYMENT_MANDATE_DATA_KEY
-from ap2.types.mandate import PaymentMandate
-from ap2.types.payment_request import PaymentCurrencyAmount
-from ap2.types.payment_request import PaymentItem
+from a2a.types import DataPart, Part, Task, TextPart
 from common import message_utils
 from common.a2a_extension_utils import EXTENSION_URI
 from common.a2a_message_builder import A2aMessageBuilder
 from common.payment_remote_a2a_client import PaymentRemoteA2aClient
+from pydantic import ValidationError
+
+from ap2.types.contact_picker import ContactAddress
+from ap2.types.mandate import (
+    CART_MANDATE_DATA_KEY,
+    PAYMENT_MANDATE_DATA_KEY,
+    PaymentMandate,
+)
+from ap2.types.payment_request import PaymentCurrencyAmount, PaymentItem
+
+from . import storage
+
 
 # A map of payment method types to their corresponding processor agent URLs.
 # This is the set of linked Merchant Payment Processor Agents this Merchant
 # is integrated with.
 _PAYMENT_PROCESSORS_BY_PAYMENT_METHOD_TYPE = {
-    "CARD": "http://localhost:8003/a2a/merchant_payment_processor_agent",
+    'CARD': 'http://localhost:8003/a2a/merchant_payment_processor_agent',
 }
 
 # A placeholder for a JSON Web Token (JWT) used for merchant authorization.
-_FAKE_JWT = "eyJhbGciOiJSUzI1NiIsImtpZIwMjQwOTA..."
+_FAKE_JWT = 'eyJhbGciOiJSUzI1NiIsImtpZIwMjQwOTA...'
 
 
 async def update_cart(
@@ -60,97 +60,102 @@ async def update_cart(
     current_task: Task | None,
     debug_mode: bool = False,
 ) -> None:
-  """Updates an existing cart after a shipping address is provided.
+    """Updates an existing cart after a shipping address is provided.
 
-  Args:
-    data_parts: A list of data part contents from the request.
-    updater: The TaskUpdater instance to add artifacts and complete the task.
-    current_task: The current task -- not used in this function.
-    debug_mode: Whether the agent is in debug mode.
-  """
-  cart_id = message_utils.find_data_part("cart_id", data_parts)
-  if not cart_id:
-    await _fail_task(updater, "Missing cart_id.")
-    return
+    Args:
+      data_parts: A list of data part contents from the request.
+      updater: The TaskUpdater instance to add artifacts and complete the task.
+      current_task: The current task -- not used in this function.
+      debug_mode: Whether the agent is in debug mode.
+    """
+    cart_id = message_utils.find_data_part('cart_id', data_parts)
+    if not cart_id:
+        await _fail_task(updater, 'Missing cart_id.')
+        return
 
-  shipping_address = message_utils.find_data_part(
-      "shipping_address", data_parts
-  )
-  if not shipping_address:
-    await _fail_task(updater, "Missing shipping_address.")
-    return
-
-  cart_mandate = storage.get_cart_mandate(cart_id)
-  if not cart_mandate:
-    await _fail_task(updater, f"CartMandate not found for cart_id: {cart_id}")
-    return
-
-  risk_data = storage.get_risk_data(updater.context_id)
-  if not risk_data:
-    # Criar risk_data simulado se não existir
-    risk_data = {
-        "device_id": "fake_device_123",
-        "ip_address": "192.168.1.100",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "transaction_risk_score": 15,  # Baixo risco (0-100)
-    }
-    storage.set_risk_data(updater.context_id, risk_data)
-
-  # Update the CartMandate with new shipping and tax cost.
-  try:
-    # Add the shipping address to the CartMandate:
-    cart_mandate.contents.payment_request.shipping_address = (
-        ContactAddress.model_validate(shipping_address)
+    shipping_address = message_utils.find_data_part(
+        'shipping_address', data_parts
     )
+    if not shipping_address:
+        await _fail_task(updater, 'Missing shipping_address.')
+        return
 
-    # Add new shipping and tax costs to the PaymentRequest:
-    tax_and_shipping_costs = [
-        PaymentItem(
-            label="Shipping",
-            amount=PaymentCurrencyAmount(currency="USD", value=2.00),
-        ),
-        PaymentItem(
-            label="Tax",
-            amount=PaymentCurrencyAmount(currency="USD", value=1.50),
-        ),
-    ]
+    cart_mandate = storage.get_cart_mandate(cart_id)
+    if not cart_mandate:
+        await _fail_task(
+            updater, f'CartMandate not found for cart_id: {cart_id}'
+        )
+        return
 
-    payment_request = cart_mandate.contents.payment_request
+    risk_data = storage.get_risk_data(updater.context_id)
+    if not risk_data:
+        # Criar risk_data simulado se não existir
+        risk_data = {
+            'device_id': 'fake_device_123',
+            'ip_address': '192.168.1.100',
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'transaction_risk_score': 15,  # Baixo risco (0-100)
+        }
+        storage.set_risk_data(updater.context_id, risk_data)
 
-    if payment_request.details.display_items is None:
-      payment_request.details.display_items = tax_and_shipping_costs
-    else:
-      # Remover quaisquer itens de envio e imposto existentes
-      payment_request.details.display_items = [
-          item for item in payment_request.details.display_items
-          if item.label not in ["Shipping", "Tax"]
-      ]
-      payment_request.details.display_items.extend(tax_and_shipping_costs)
+    # Update the CartMandate with new shipping and tax cost.
+    try:
+        # Add the shipping address to the CartMandate:
+        cart_mandate.contents.payment_request.shipping_address = (
+            ContactAddress.model_validate(shipping_address)
+        )
 
-    # Recompute the total amount of the PaymentRequest:
-    payment_request.details.total.amount.value = sum(
-        item.amount.value for item in payment_request.details.display_items
-    )
+        # Add new shipping and tax costs to the PaymentRequest:
+        tax_and_shipping_costs = [
+            PaymentItem(
+                label='Shipping',
+                amount=PaymentCurrencyAmount(currency='USD', value=2.00),
+            ),
+            PaymentItem(
+                label='Tax',
+                amount=PaymentCurrencyAmount(currency='USD', value=1.50),
+            ),
+        ]
 
-    # A base64url-encoded JSON Web Token (JWT) that digitally signs the cart
-    # contents by the merchant's private key.
-    cart_mandate.merchant_authorization = _FAKE_JWT
-    
-    # Atualizar o carrinho no armazenamento
-    storage.set_cart_mandate(cart_id, cart_mandate)
+        payment_request = cart_mandate.contents.payment_request
 
-    await updater.add_artifact([
-        Part(
-            root=DataPart(
-                data={CART_MANDATE_DATA_KEY: cart_mandate.model_dump()}
-            )
-        ),
-        Part(root=DataPart(data={"risk_data": risk_data})),
-    ])
-    await updater.complete()
+        if payment_request.details.display_items is None:
+            payment_request.details.display_items = tax_and_shipping_costs
+        else:
+            # Remover quaisquer itens de envio e imposto existentes
+            payment_request.details.display_items = [
+                item
+                for item in payment_request.details.display_items
+                if item.label not in ['Shipping', 'Tax']
+            ]
+            payment_request.details.display_items.extend(tax_and_shipping_costs)
 
-  except ValidationError as e:
-    await _fail_task(updater, f"Invalid CartMandate after update: {e}")
+        # Recompute the total amount of the PaymentRequest:
+        payment_request.details.total.amount.value = sum(
+            item.amount.value for item in payment_request.details.display_items
+        )
+
+        # A base64url-encoded JSON Web Token (JWT) that digitally signs the cart
+        # contents by the merchant's private key.
+        cart_mandate.merchant_authorization = _FAKE_JWT
+
+        # Atualizar o carrinho no armazenamento
+        storage.set_cart_mandate(cart_id, cart_mandate)
+
+        await updater.add_artifact(
+            [
+                Part(
+                    root=DataPart(
+                        data={CART_MANDATE_DATA_KEY: cart_mandate.model_dump()}
+                    )
+                ),
+                Part(root=DataPart(data={'risk_data': risk_data})),
+            ]
+        )
+        await updater.complete()
+
+    except ValidationError as e:
+        await _fail_task(updater, f'Invalid CartMandate after update: {e}')
 
 
 async def initiate_payment(
@@ -159,94 +164,103 @@ async def initiate_payment(
     current_task: Task | None,
     debug_mode: bool = False,
 ) -> None:
-  """Initiates a payment for a given payment mandate. Use to make a payment.
+    """Initiates a payment for a given payment mandate. Use to make a payment.
 
-  Args:
-    data_parts: The data parts from the request, expected to contain a
-      PaymentMandate and optionally a challenge response.
-    updater: The TaskUpdater instance for updating the task state.
-    current_task: The current task, used to find the processor's task ID.
-    debug_mode: Whether the agent is in debug mode.
-  """
-  try:
-    payment_mandate = message_utils.parse_canonical_object(
-        PAYMENT_MANDATE_DATA_KEY, data_parts, PaymentMandate
-    )
-    if not payment_mandate:
-      await _fail_task(updater, "Missing payment_mandate.")
-      return
-  
-    # Verificar se o payment_mandate está completo com informações necessárias
-    payment_mandate_contents = payment_mandate.payment_mandate_contents
-    if not payment_mandate_contents.payment_response.method_name:
-      await _fail_task(updater, "Missing payment method information in payment mandate.")
-      return
-      
-    # Verificar o mandato do usuário se necessário
-    if payment_mandate.user_authorization is None:
-      # Em um cenário real, isso pode ser um ponto para verificar se o mandato precisa de autorização
-      # Por enquanto, apenas registramos a informação
-      import logging
-      logging.info("Payment mandate without user_authorization")
-  
-    # Obter risk_data existente ou criar dados simulados
-    risk_data = message_utils.find_data_part("risk_data", data_parts)
-    if not risk_data:
-      risk_data = storage.get_risk_data(updater.context_id)
-      if not risk_data:
-        risk_data = {
-            "device_id": "fake_device_123",
-            "ip_address": "192.168.1.100",
-            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "transaction_risk_score": 15,  # Baixo risco (0-100)
-        }
-        storage.set_risk_data(updater.context_id, risk_data)
-  
-    payment_method_type = payment_mandate_contents.payment_response.method_name
-    processor_url = _PAYMENT_PROCESSORS_BY_PAYMENT_METHOD_TYPE.get(
-        payment_method_type
-    )
-  
-    if not processor_url:
-      await _fail_task(
-          updater, f"No payment processor found for method: {payment_method_type}"
-      )
-      return
-  
-    payment_processor_agent = PaymentRemoteA2aClient(
-        name="payment_processor_agent",
-        base_url=processor_url,
-        required_extensions={
-            EXTENSION_URI,
-        },
-    )
-  
-    message_builder = (
-        A2aMessageBuilder()
-        .set_context_id(updater.context_id)
-        .add_text("initiate_payment")
-        .add_data(PAYMENT_MANDATE_DATA_KEY, payment_mandate.model_dump())
-        .add_data("risk_data", risk_data)
-        .add_data("debug_mode", debug_mode)
-    )
-  
-    challenge_response = (
-        message_utils.find_data_part("challenge_response", data_parts) or ""
-    )
-    if challenge_response:
-      message_builder.add_data("challenge_response", challenge_response)
-  
-    payment_processor_task_id = _get_payment_processor_task_id(current_task)
-    if payment_processor_task_id:
-      message_builder.set_task_id(payment_processor_task_id)
-  
-    task = await payment_processor_agent.send_a2a_message(message_builder.build())
-    await updater.update_status(
-        state=task.status.state,
-        message=task.status.message,
-    )
-  except Exception as e:
-    await _fail_task(updater, f"Error initiating payment: {str(e)}")
+    Args:
+      data_parts: The data parts from the request, expected to contain a
+        PaymentMandate and optionally a challenge response.
+      updater: The TaskUpdater instance for updating the task state.
+      current_task: The current task, used to find the processor's task ID.
+      debug_mode: Whether the agent is in debug mode.
+    """
+    try:
+        payment_mandate = message_utils.parse_canonical_object(
+            PAYMENT_MANDATE_DATA_KEY, data_parts, PaymentMandate
+        )
+        if not payment_mandate:
+            await _fail_task(updater, 'Missing payment_mandate.')
+            return
+
+        # Verificar se o payment_mandate está completo com informações necessárias
+        payment_mandate_contents = payment_mandate.payment_mandate_contents
+        if not payment_mandate_contents.payment_response.method_name:
+            await _fail_task(
+                updater,
+                'Missing payment method information in payment mandate.',
+            )
+            return
+
+        # Verificar o mandato do usuário se necessário
+        if payment_mandate.user_authorization is None:
+            # Em um cenário real, isso pode ser um ponto para verificar se o mandato precisa de autorização
+            # Por enquanto, apenas registramos a informação
+            import logging
+
+            logging.info('Payment mandate without user_authorization')
+
+        # Obter risk_data existente ou criar dados simulados
+        risk_data = message_utils.find_data_part('risk_data', data_parts)
+        if not risk_data:
+            risk_data = storage.get_risk_data(updater.context_id)
+            if not risk_data:
+                risk_data = {
+                    'device_id': 'fake_device_123',
+                    'ip_address': '192.168.1.100',
+                    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                    'transaction_risk_score': 15,  # Baixo risco (0-100)
+                }
+                storage.set_risk_data(updater.context_id, risk_data)
+
+        payment_method_type = (
+            payment_mandate_contents.payment_response.method_name
+        )
+        processor_url = _PAYMENT_PROCESSORS_BY_PAYMENT_METHOD_TYPE.get(
+            payment_method_type
+        )
+
+        if not processor_url:
+            await _fail_task(
+                updater,
+                f'No payment processor found for method: {payment_method_type}',
+            )
+            return
+
+        payment_processor_agent = PaymentRemoteA2aClient(
+            name='payment_processor_agent',
+            base_url=processor_url,
+            required_extensions={
+                EXTENSION_URI,
+            },
+        )
+
+        message_builder = (
+            A2aMessageBuilder()
+            .set_context_id(updater.context_id)
+            .add_text('initiate_payment')
+            .add_data(PAYMENT_MANDATE_DATA_KEY, payment_mandate.model_dump())
+            .add_data('risk_data', risk_data)
+            .add_data('debug_mode', debug_mode)
+        )
+
+        challenge_response = (
+            message_utils.find_data_part('challenge_response', data_parts) or ''
+        )
+        if challenge_response:
+            message_builder.add_data('challenge_response', challenge_response)
+
+        payment_processor_task_id = _get_payment_processor_task_id(current_task)
+        if payment_processor_task_id:
+            message_builder.set_task_id(payment_processor_task_id)
+
+        task = await payment_processor_agent.send_a2a_message(
+            message_builder.build()
+        )
+        await updater.update_status(
+            state=task.status.state,
+            message=task.status.message,
+        )
+    except Exception as e:
+        await _fail_task(updater, f'Error initiating payment: {str(e)}')
 
 
 async def dpc_finish(
@@ -254,60 +268,77 @@ async def dpc_finish(
     updater: TaskUpdater,
     current_task: Task | None,
 ) -> None:
-  """Receives and validates a DPC response to finalize payment.
+    """Receives and validates a DPC response to finalize payment.
 
-  This tool receives the Digital Payment Credential (DPC) response, in the form
-  of an OpenID4VP JSON, validates it, and simulates payment finalization.
+    This tool receives the Digital Payment Credential (DPC) response, in the form
+    of an OpenID4VP JSON, validates it, and simulates payment finalization.
 
-  Args:
-    data_parts: A list of data part contents from the request.
-    updater: The TaskUpdater instance to add artifacts and complete the task.
-    current_task: The current task, not used in this function.
-  """
-  try:
-    dpc_response = message_utils.find_data_part("dpc_response", data_parts)
-    if not dpc_response:
-      await _fail_task(updater, "Missing dpc_response.")
-      return
+    Args:
+      data_parts: A list of data part contents from the request.
+      updater: The TaskUpdater instance to add artifacts and complete the task.
+      current_task: The current task, not used in this function.
+    """
+    try:
+        dpc_response = message_utils.find_data_part('dpc_response', data_parts)
+        if not dpc_response:
+            await _fail_task(updater, 'Missing dpc_response.')
+            return
 
-    import logging
-    logging.info("Received DPC response for finalization: %s", dpc_response)
+        import logging
 
-    # --- Validação e lógica de finalização de pagamento ---
-    # 1. Verificar estrutura básica da resposta DPC
-    if not isinstance(dpc_response, dict):
-      await _fail_task(updater, "Invalid DPC response format. Expected a dictionary.")
-      return
-      
-    # 2. Verificar nonce e outros atributos (simulado)
-    nonce = dpc_response.get("nonce")
-    if not nonce:
-      logging.warning("DPC response missing nonce, but proceeding for demo purposes")
-      
-    # 3. Verificar claims/credenciais no DPC
-    vp_token = dpc_response.get("vp_token")
-    if not vp_token:
-      logging.warning("DPC response missing vp_token, but proceeding for demo purposes")
-    
-    # 4. Em implementação real, validar assinaturas e credenciais
-    # TODO: Validar assinaturas e outros atributos específicos do comerciante
-    # TODO: Passar a resposta DPC para o agente processador de pagamentos para validação
+        logging.info('Received DPC response for finalization: %s', dpc_response)
 
-    # 5. Finalização simulada do pagamento
-    transaction_id = f"txn_{base64.b64encode(str(id(dpc_response)).encode()).decode()[:8]}"
-    await updater.add_artifact([
-        Part(root=DataPart(data={
-            "payment_status": "SUCCESS",
-            "transaction_id": transaction_id,
-            "timestamp": datetime.datetime.now().isoformat(),
-            "amount": dpc_response.get("amount", {}).get("value", "0.00"),
-            "currency": dpc_response.get("amount", {}).get("currency", "USD"),
-        }))
-    ])
-    await updater.complete()
-    
-  except Exception as e:
-    await _fail_task(updater, f"Error processing DPC response: {str(e)}")
+        # --- Validação e lógica de finalização de pagamento ---
+        # 1. Verificar estrutura básica da resposta DPC
+        if not isinstance(dpc_response, dict):
+            await _fail_task(
+                updater, 'Invalid DPC response format. Expected a dictionary.'
+            )
+            return
+
+        # 2. Verificar nonce e outros atributos (simulado)
+        nonce = dpc_response.get('nonce')
+        if not nonce:
+            logging.warning(
+                'DPC response missing nonce, but proceeding for demo purposes'
+            )
+
+        # 3. Verificar claims/credenciais no DPC
+        vp_token = dpc_response.get('vp_token')
+        if not vp_token:
+            logging.warning(
+                'DPC response missing vp_token, but proceeding for demo purposes'
+            )
+
+        # 4. Em implementação real, validar assinaturas e credenciais
+        # TODO: Validar assinaturas e outros atributos específicos do comerciante
+        # TODO: Passar a resposta DPC para o agente processador de pagamentos para validação
+
+        # 5. Finalização simulada do pagamento
+        transaction_id = f'txn_{base64.b64encode(str(id(dpc_response)).encode()).decode()[:8]}'
+        await updater.add_artifact(
+            [
+                Part(
+                    root=DataPart(
+                        data={
+                            'payment_status': 'SUCCESS',
+                            'transaction_id': transaction_id,
+                            'timestamp': datetime.datetime.now().isoformat(),
+                            'amount': dpc_response.get('amount', {}).get(
+                                'value', '0.00'
+                            ),
+                            'currency': dpc_response.get('amount', {}).get(
+                                'currency', 'USD'
+                            ),
+                        }
+                    )
+                )
+            ]
+        )
+        await updater.complete()
+
+    except Exception as e:
+        await _fail_task(updater, f'Error processing DPC response: {str(e)}')
 
 
 def _get_payment_processor_task_id(task: Task | None) -> str | None:
