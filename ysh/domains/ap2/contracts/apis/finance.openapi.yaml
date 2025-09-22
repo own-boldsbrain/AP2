@@ -1,0 +1,519 @@
+openapi: 3.1.0
+info:
+  title: API de Financiamentos Solares (Brasil)
+  version: 1.0.0
+  summary: Linhas de financiamento para sistemas fotovoltaicos (conteúdo fornecido pelo usuário, normalizado).
+  description: |
+    Esta API expõe bancos/fintechs/cooperativas e programas BNDES relacionados a financiamento de energia solar.
+    **Unidades**: currency=BRL, interest_rate_unit=per_month, amount_unit=BRL.
+    **Avisos**: condições sujeitas à aprovação das instituições. Taxas e limites podem variar.
+servers:
+  - url: https://api.yellosolarhub.com/finance
+    description: Produção (exemplo)
+  - url: https://staging.api.yellosolarhub.com/finance
+    description: Staging (exemplo)
+tags:
+  - name: Lenders
+    description: Bancos/fintechs/cooperativas e seus produtos.
+  - name: BNDES
+    description: Programas BNDES e correlatos (Finame, Fundo Clima, etc).
+  - name: Search
+    description: Busca consolidada com múltiplos filtros.
+paths:
+  /lenders:
+    get:
+      tags:
+        - Lenders
+      summary: Listar lenders e seus produtos
+      description: Retorna a lista de lenders e produtos, com filtros opcionais.
+      parameters:
+        - in: query
+          name: audience
+          description: Público-alvo (PF, PJ, Produtor Rural, etc).
+          schema:
+            type: string
+        - in: query
+          name: bank
+          description: Nome do banco/fintech/cooperativa (e.g., BV, Santander, BTG).
+          schema:
+            type: string
+        - in: query
+          name: financed_percentage_gte
+          description: Financiamento mínimo (%).
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: term_months_max_gte
+          description: Prazo máximo em meses (mínimo desejado).
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: grace_days_max_gte
+          description: Carência máxima em dias (mínimo desejado).
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: interest_from_lte
+          description: Taxa de juros (a.m.) máxima aceitável.
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: region
+          description: Restrição regional (ex. "Centro-Oeste" para FCO).
+          schema:
+            type: string
+        - in: query
+          name: q
+          description: Busca textual em nome, plataforma e notas.
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        "200":
+          description: Lista paginada de lenders.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LendersPage'
+              examples:
+                ok:
+                  value:
+                    page: 1
+                    page_size: 2
+                    total: 10
+                    items:
+                      - name: BV
+                        platform: Meu Financiamento Solar (parceria)
+                        audiences:
+                          - PF
+                          - PJ
+                        products:
+                          - id: bv_mfs_pf_pj
+                            title: Financiamento Solar BV
+                            max_amount_pf: 500000
+                            max_amount_pj: 3000000
+                            financed_percentage: 100
+                            term_months_max: 84
+                            grace_days_max: 120
+                            interest_from: 1.27
+                            installation_included: true
+                      - name: Santander
+                        platform: Santander + Vezes
+                        audiences:
+                          - PF
+                          - PJ
+                        products:
+                          - id: santander_vezes_pf_pj
+                            title: Santander + Vezes Energia Solar
+                            min_amount: 2000
+                            term_months_max: 96
+                            grace_days_max: 120
+                            interest_from: 0.89
+                            installation_included: true
+  /lenders/{lenderId}:
+    get:
+      tags:
+        - Lenders
+      summary: Obter um lender específico
+      parameters:
+        - in: path
+          name: lenderId
+          required: true
+          description: ID ou slug do lender (ex. "bv", "santander", "bb").
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dados do lender.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lender'
+              examples:
+                bv:
+                  value:
+                    name: BV
+                    platform: Meu Financiamento Solar (parceria)
+                    audiences:
+                      - PF
+                      - PJ
+                    products:
+                      - id: bv_mfs_pf_pj
+                        title: Financiamento Solar BV
+                        max_amount_pf: 500000
+                        max_amount_pj: 3000000
+                        financed_percentage: 100
+                        term_months_max: 84
+                        grace_days_max: 120
+                        interest_from: 1.27
+                        installation_included: true
+        "404":
+          description: Lender não encontrado.
+  /bndes-programs:
+    get:
+      tags:
+        - BNDES
+      summary: Listar programas BNDES
+      description: Retorna a lista de programas (BNDES Automático, Finame, Fundo Clima, Pronaf etc.).
+      parameters:
+        - in: query
+          name: program
+          schema:
+            type: string
+          description: Nome do programa (ex. "Finame", "Fundo Clima").
+        - in: query
+          name: finame_code_possible
+          schema:
+            type: boolean
+        - in: query
+          name: audience
+          schema:
+            type: string
+          description: Filtra por público (PF, PJ, Cooperativas, etc).
+        - in: query
+          name: term_years_max_gte
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: participation_max_percentage_gte
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+      responses:
+        "200":
+          description: Lista de programas BNDES.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BNDESProgram'
+              examples:
+                finame_direto:
+                  value:
+                    - program: Finame Energia Renovável - Direto
+                      finame_code_possible: true
+                      audiences:
+                        - Empresas com faturamento anual > R$ 40 milhões
+                      max_amount_per_group: 10000000
+                      term_years_max: 16
+                      grace_years_max: 3
+                      application_path: Direto ao BNDES via Consulta Prévia Eletrônica
+  /search:
+    get:
+      tags:
+        - Search
+      summary: Busca consolidada (lenders + BNDES)
+      description: Endpoint único de busca ampla com filtros combinados.
+      parameters:
+        - in: query
+          name: audience
+          schema:
+            type: string
+        - in: query
+          name: bank
+          schema:
+            type: string
+        - in: query
+          name: interest_from_lte
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: financed_percentage_gte
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+        - in: query
+          name: term_months_max_gte
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: grace_days_max_gte
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: region
+          schema:
+            type: string
+        - in: query
+          name: program
+          schema:
+            type: string
+        - in: query
+          name: finame_code_possible
+          schema:
+            type: boolean
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        "200":
+          description: Resultado paginado com seções lenders e programas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResult'
+              examples:
+                sample:
+                  value:
+                    query:
+                      audience: PF
+                      interest_from_lte: 1.3
+                      term_months_max_gte: 60
+                    lenders:
+                      page: 1
+                      page_size: 50
+                      total: 3
+                      items:
+                        - name: BV
+                          products:
+                            - id: bv_mfs_pf_pj
+                              financed_percentage: 100
+                              term_months_max: 84
+                              grace_days_max: 120
+                              interest_from: 1.27
+                        - name: Santander
+                          products:
+                            - id: santander_vezes_pf_pj
+                              term_months_max: 96
+                              grace_days_max: 120
+                              interest_from: 0.89
+                        - name: Itaú
+                          products:
+                            - id: itau_solar_pf
+                              term_months_max: 60
+                              grace_days_max: 120
+                              interest_from: 1.55
+                    bndes_programs:
+                      items:
+                        - program: Finame Energia Renovável - Indireto
+                          term_years_max: 10
+                          grace_years_max: 2
+                          finame_code_possible: true
+components:
+  schemas:
+    Product:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        min_amount:
+          type: integer
+          nullable: true
+        max_amount:
+          type: integer
+          nullable: true
+        max_amount_pf:
+          type: integer
+          nullable: true
+        max_amount_pj:
+          type: integer
+          nullable: true
+        financed_percentage:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 100
+        term_months_max:
+          type: integer
+          nullable: true
+          minimum: 1
+        term_years_max_pre:
+          type: integer
+          nullable: true
+          minimum: 1
+        term_years_max_pos:
+          type: integer
+          nullable: true
+          minimum: 1
+        grace_days_max:
+          type: integer
+          nullable: true
+          minimum: 0
+        grace_months_res_com:
+          type: integer
+          nullable: true
+          minimum: 0
+        grace_months_produtor_rural:
+          type: integer
+          nullable: true
+          minimum: 0
+        interest_from:
+          type: number
+          nullable: true
+          minimum: 0
+          description: a.m.
+        installation_included:
+          type: boolean
+          nullable: true
+        digital_process:
+          type: string
+          nullable: true
+        region_scope:
+          type: string
+          nullable: true
+        requirements_notes:
+          type: string
+          nullable: true
+        marketing_notes:
+          type: string
+          nullable: true
+      required:
+        - id
+        - title
+    Lender:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        platform:
+          type: string
+          nullable: true
+        audiences:
+          type: array
+          items:
+            type: string
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+      required:
+        - name
+        - products
+    LendersPage:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lender'
+    BNDESProgram:
+      type: object
+      additionalProperties: false
+      properties:
+        program:
+          type: string
+        finame_code_possible:
+          type: boolean
+          nullable: true
+        audiences:
+          type: array
+          items:
+            type: string
+        region_scope:
+          type: string
+          nullable: true
+        scope_note:
+          type: string
+          nullable: true
+        max_amount:
+          type: integer
+          nullable: true
+        max_amount_per_group:
+          type: integer
+          nullable: true
+        participation_max_percentage:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 100
+        term_years_max:
+          type: integer
+          nullable: true
+          minimum: 1
+        grace_years_max:
+          type: integer
+          nullable: true
+          minimum: 0
+        interest_from:
+          type: number
+          nullable: true
+          minimum: 0
+          description: a.a. quando informado
+        application_path:
+          type: string
+          nullable: true
+        requirements_notes:
+          type: string
+          nullable: true
+      required:
+        - program
+    SearchResult:
+      type: object
+      properties:
+        query:
+          type: object
+          additionalProperties: true
+        lenders:
+          $ref: '#/components/schemas/LendersPage'
+        bndes_programs:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/BNDESProgram'
+examples:
+  curl_lenders_pf:
+    summary: Lenders PF com prazo ≥ 60 meses e juros ≤ 1.3% a.m.
+    value: |
+      curl -s "https://api.yellosolarhub.com/finance/lenders?audience=PF&term_months_max_gte=60&interest_from_lte=1.3"
+  curl_search_grace_financing:
+    summary: Produtos com carência ≥ 120 dias e financiamento ≥ 100%
+    value: |
+      curl -s "https://api.yellosolarhub.com/finance/search?grace_days_max_gte=120&financed_percentage_gte=100"
+  curl_bndes_finame:
+    summary: Programas BNDES com Finame possível e prazo ≥ 10 anos
+    value: |
+      curl -s "https://api.yellosolarhub.com/finance/bndes-programs?finame_code_possible=true&term_years_max_gte=10"
+  curl_lender_by_id:
+    summary: Lender por ID/slug
+    value: |
+      curl -s "https://api.yellosolarhub.com/finance/lenders/bb"

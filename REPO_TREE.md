@@ -2,6 +2,23 @@
 
 ysh/
 └─ domains/
+   ├─ ap2/
+   │  ├─ contracts/
+   │  │  └─ apis/
+   │  │     └─ finance.openapi.yaml
+   │  ├─ docs/
+   │  │  └─ MCP_E2E.md
+   │  ├─ mcp/
+   │  │  └─ manifests/
+   │  │     ├─ ap2.e2e360.suite.json
+   │  │     ├─ credentials_provider_agent.json
+   │  │     ├─ merchant_agent.json
+   │  │     └─ merchant_payment_processor_agent.json
+   │  └─ workflows/
+   │     └─ kestra/
+   │        ├─ credentials_provider_flow.yml
+   │        ├─ merchant_checkout_flow.yml
+   │        └─ payment_processor_flow.yml
    └─ origination-viabilidade/
       ├─ apps/
       │  ├─ origination_api/
