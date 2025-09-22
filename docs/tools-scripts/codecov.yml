@@ -1,0 +1,64 @@
+codecov:
+  notify:
+    require_ci_to_pass: no
+
+# "flags" are used to identify subsets of the overall codebase when calculating coverage.
+# Currently used for "remote_data" (pvlib.iotools) and "core" (everything else).
+# Because we only run the remote_data tests sometimes, we need to split it out so that
+# codecov doesn't report a big drop in coverage when we don't run them.
+# We also use "carryforward: true" so that, when we don't run remote_data tests, the last
+# known coverage is carried forward and used in place of the missing coverage.
+# https://docs.codecov.com/docs/flags
+flags:
+
+  core:
+    paths:
+      - pvlib/
+      - tests/
+      - '!pvlib/iotools/'
+      - '!tests/iotools/'
+    carryforward: false
+
+  remote-data:
+    paths:
+      - pvlib/iotools/
+      - tests/iotools
+    carryforward: true  # if not run, use coverage from previous commit
+
+
+coverage:
+  status:  # each entry here represents a check status to report to GitHub
+    patch:
+      default:
+        target: 100%
+
+    project:
+      default: off
+
+      core:
+        target: auto
+        flags:
+          - core
+
+      remote-data:
+        target: auto
+        flags:
+          - remote-data
+
+      tests-core:
+        target: 95%
+        paths:
+          - 'tests/.*'
+          - '!tests/iotools/.*'
+        flags:
+          - core
+
+      tests-remote-data:
+        target: 95%
+        paths:
+          - 'tests/iotools/.*'
+        flags:
+          - remote-data
+
+
+comment: off

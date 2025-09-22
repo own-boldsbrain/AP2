@@ -1,0 +1,112 @@
+{
+    "name": "ShoppingAgent",
+    "description": "An agent that helps users find products, compare options, and complete purchases through the AP2 protocol.",
+    "capabilities": {
+        "extensions": [
+            {
+                "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                "description": "Supports the Agent Payments Protocol.",
+                "required": true
+            }
+        ]
+    },
+    "skills": [
+        {
+            "id": "create_intent_mandate",
+            "name": "Create Intent Mandate",
+            "description": "Creates an intent mandate based on the user's shopping requirements.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "natural_language_description": {
+                        "type": "string",
+                        "description": "The user's description of what they want to purchase."
+                    },
+                    "merchants": {
+                        "type": "array",
+                        "description": "Optional list of preferred merchants."
+                    },
+                    "required_refundability": {
+                        "type": "boolean",
+                        "description": "Whether refundability is required for the purchase."
+                    }
+                },
+                "required": ["natural_language_description"]
+            },
+            "tags": ["intent", "mandate", "shopping"]
+        },
+        {
+            "id": "find_products",
+            "name": "Find Products",
+            "description": "Searches for products across available merchants based on user criteria.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query for finding products."
+                    },
+                    "intent_mandate": {
+                        "type": "object",
+                        "description": "Optional intent mandate to guide the search."
+                    },
+                    "price_range": {
+                        "type": "object",
+                        "description": "Optional price range for filtering results."
+                    }
+                },
+                "required": ["query"]
+            },
+            "tags": ["search", "products", "shopping"]
+        },
+        {
+            "id": "checkout",
+            "name": "Checkout",
+            "description": "Initiates and manages the checkout process for a purchase.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cart_mandate": {
+                        "type": "object",
+                        "description": "The cart mandate for the transaction."
+                    },
+                    "payment_method_preference": {
+                        "type": "string",
+                        "description": "Optional preferred payment method type."
+                    }
+                },
+                "required": ["cart_mandate"]
+            },
+            "tags": ["checkout", "payment", "purchase"]
+        },
+        {
+            "id": "handle_otp_challenge",
+            "name": "Handle OTP Challenge",
+            "description": "Assists the user in completing an OTP challenge during payment.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "description": "The ID of the transaction requiring verification."
+                    },
+                    "challenge_info": {
+                        "type": "object",
+                        "description": "Information about the challenge being presented."
+                    }
+                },
+                "required": ["transaction_id", "challenge_info"]
+            },
+            "tags": ["otp", "challenge", "verification"]
+        }
+    ],
+    "defaultInputModes": [
+        "application/json",
+        "text/plain"
+    ],
+    "defaultOutputModes": [
+        "application/json"
+    ],
+    "url": "http://localhost:8000/mcp/shopping_agent",
+    "version": "1.0.0"
+}

@@ -1,0 +1,127 @@
+{
+    "name": "MerchantPaymentProcessorAgent",
+    "description": "A payment processor agent that handles transaction validation, OTP challenges, and payment processing for AP2 transactions.",
+    "capabilities": {
+        "extensions": [
+            {
+                "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                "description": "Supports the Agent Payments Protocol.",
+                "required": true
+            }
+        ]
+    },
+    "skills": [
+        {
+            "id": "initiate_payment",
+            "name": "Initiate Payment",
+            "description": "Initiates the payment processing workflow for a transaction.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cart_mandate": {
+                        "type": "object",
+                        "description": "The cart mandate for the transaction."
+                    },
+                    "payment_mandate": {
+                        "type": "object",
+                        "description": "The payment mandate containing authorization details."
+                    },
+                    "payment_method": {
+                        "type": "object",
+                        "description": "The payment method information."
+                    }
+                },
+                "required": ["cart_mandate", "payment_method"]
+            },
+            "tags": ["payment", "processing", "transaction"]
+        },
+        {
+            "id": "handle_payment_mandate",
+            "name": "Handle Payment Mandate",
+            "description": "Processes and validates a payment mandate for a transaction.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "payment_mandate": {
+                        "type": "object",
+                        "description": "The payment mandate to handle."
+                    },
+                    "cart_mandate": {
+                        "type": "object",
+                        "description": "The associated cart mandate."
+                    }
+                },
+                "required": ["payment_mandate", "cart_mandate"]
+            },
+            "tags": ["mandate", "validation", "processing"]
+        },
+        {
+            "id": "raise_challenge",
+            "name": "Raise OTP Challenge",
+            "description": "Initiates a one-time password (OTP) challenge for payment verification.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "description": "The ID of the transaction requiring verification."
+                    },
+                    "challenge_type": {
+                        "type": "string",
+                        "description": "The type of challenge to raise (e.g., SMS, email)."
+                    }
+                },
+                "required": ["transaction_id"]
+            },
+            "tags": ["otp", "challenge", "verification"]
+        },
+        {
+            "id": "verify_challenge_response",
+            "name": "Verify Challenge Response",
+            "description": "Verifies the user's response to an OTP challenge.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "description": "The ID of the transaction being verified."
+                    },
+                    "challenge_response": {
+                        "type": "string",
+                        "description": "The user's response to the challenge."
+                    }
+                },
+                "required": ["transaction_id", "challenge_response"]
+            },
+            "tags": ["otp", "verification", "response"]
+        },
+        {
+            "id": "complete_payment",
+            "name": "Complete Payment",
+            "description": "Finalizes a payment transaction after successful verification.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "transaction_id": {
+                        "type": "string",
+                        "description": "The ID of the transaction to complete."
+                    },
+                    "payment_mandate": {
+                        "type": "object",
+                        "description": "The associated payment mandate."
+                    }
+                },
+                "required": ["transaction_id"]
+            },
+            "tags": ["payment", "completion", "transaction"]
+        }
+    ],
+    "defaultInputModes": [
+        "application/json"
+    ],
+    "defaultOutputModes": [
+        "application/json"
+    ],
+    "url": "http://localhost:8003/mcp/merchant_payment_processor",
+    "version": "1.0.0"
+}

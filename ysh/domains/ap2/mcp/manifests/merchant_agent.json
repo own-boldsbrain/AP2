@@ -1,0 +1,131 @@
+{
+    "name": "MerchantAgent",
+    "description": "A merchant agent that manages product catalogs, carts, and payment processing integrations for AP2 transactions.",
+    "capabilities": {
+        "extensions": [
+            {
+                "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                "description": "Supports the Agent Payments Protocol.",
+                "required": true
+            }
+        ]
+    },
+    "skills": [
+        {
+            "id": "search_catalog",
+            "name": "Search Catalog",
+            "description": "Searches the merchant's product catalog based on user's criteria.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query for finding products."
+                    },
+                    "intent_mandate": {
+                        "type": "object",
+                        "description": "Optional intent mandate to guide the search."
+                    }
+                },
+                "required": ["query"]
+            },
+            "tags": ["catalog", "search", "products"]
+        },
+        {
+            "id": "update_cart",
+            "name": "Update Cart",
+            "description": "Adds, removes, or updates items in the user's shopping cart.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cart_id": {
+                        "type": "string",
+                        "description": "The ID of the cart to update."
+                    },
+                    "items": {
+                        "type": "array",
+                        "description": "The items to add or update in the cart."
+                    },
+                    "operation": {
+                        "type": "string",
+                        "description": "The operation to perform (add, remove, update)."
+                    }
+                },
+                "required": ["cart_id", "items", "operation"]
+            },
+            "tags": ["cart", "update", "checkout"]
+        },
+        {
+            "id": "create_cart_mandate",
+            "name": "Create Cart Mandate",
+            "description": "Creates a digitally signed cart mandate for a transaction.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cart_id": {
+                        "type": "string",
+                        "description": "The ID of the cart to create a mandate for."
+                    },
+                    "payment_options": {
+                        "type": "object",
+                        "description": "Payment options and requirements."
+                    }
+                },
+                "required": ["cart_id"]
+            },
+            "tags": ["mandate", "cart", "authorization"]
+        },
+        {
+            "id": "initiate_payment",
+            "name": "Initiate Payment",
+            "description": "Initiates a payment process using a cart mandate and payment information.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cart_mandate": {
+                        "type": "object",
+                        "description": "The cart mandate for the transaction."
+                    },
+                    "payment_method": {
+                        "type": "object",
+                        "description": "The payment method information."
+                    },
+                    "shipping_address": {
+                        "type": "object",
+                        "description": "The shipping address for physical goods."
+                    }
+                },
+                "required": ["cart_mandate", "payment_method"]
+            },
+            "tags": ["payment", "transaction", "checkout"]
+        },
+        {
+            "id": "dpc_finish",
+            "name": "Digital Payment Credential Finish",
+            "description": "Completes a transaction using a Digital Payment Credential.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cart_mandate": {
+                        "type": "object",
+                        "description": "The cart mandate for the transaction."
+                    },
+                    "dpc_response": {
+                        "type": "object",
+                        "description": "The DPC response from the authentication process."
+                    }
+                },
+                "required": ["cart_mandate", "dpc_response"]
+            },
+            "tags": ["dpc", "payment", "completion"]
+        }
+    ],
+    "defaultInputModes": [
+        "application/json"
+    ],
+    "defaultOutputModes": [
+        "application/json"
+    ],
+    "url": "http://localhost:8001/mcp/merchant_agent",
+    "version": "1.0.0"
+}
