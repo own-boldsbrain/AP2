@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  asterisk:
+    image: ghcr.io/asterisk/asterisk:20.9.0
+    container_name: contact-center-asterisk
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./asterisk/conf/pjsip.conf:/etc/asterisk/pjsip.conf:ro
+      - ./asterisk/conf/extensions.conf:/etc/asterisk/extensions.conf:ro
+      - ./asterisk/conf/queues.conf:/etc/asterisk/queues.conf:ro
+      - ./asterisk/conf/musiconhold.conf:/etc/asterisk/musiconhold.conf:ro
+      - ./asterisk/conf/rtp.conf:/etc/asterisk/rtp.conf:ro
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "8088:8088/tcp"
+      - "10000-10050:10000-10050/udp"
+    networks:
+      callcenter:
+        ipv4_address: 172.28.0.10
+
+  coturn:
+    image: coturn/coturn:4.6.4
+    container_name: contact-center-coturn
+    command: ["/bin/sh", "-c", "turnserver -c /etc/coturn/turnserver.conf"]
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "5349:5349/tcp"
+    networks:
+      callcenter:
+        ipv4_address: 172.28.0.30
+    profiles:
+      - webrtc
+
+  freeswitch:
+    image: signalwire/freeswitch:1.10.10
+    container_name: contact-center-freeswitch
+    restart: unless-stopped
+    ports:
+      - "5080:5080/udp"
+      - "5066:5066/tcp"
+      - "7443:7443/tcp"
+      - "16384-16400:16384-16400/udp"
+    networks:
+      callcenter:
+        ipv4_address: 172.28.0.20
+    profiles:
+      - freeswitch
+
+networks:
+  callcenter:
+    name: contact-center-net
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
