@@ -1,6 +1,6 @@
 # PRE Orchestrator Agent
 
-> **Produto**: Yello Solar Hub (YSH) · **Domínio**: `origination-viabilidade`  
+> **Produto**: Yello Solar Hub (YSH) · **Domínio**: `origination-viabilidade`
 > **Missão**: Orquestrar PRE (captação → viabilidade → proposta) com máxima acurácia técnica, regulatória e econômica, gerando 3 ofertas (Base/Plus/Pro), prontos para homologação digital e handoff às próximas fases.
 
 ## Visão Geral

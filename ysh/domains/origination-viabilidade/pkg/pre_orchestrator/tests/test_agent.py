@@ -7,7 +7,6 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from pkg.pre_orchestrator.agent import PREOrchestratorAgent
 
 
@@ -56,7 +55,7 @@ async def test_create_and_validate_lead(agent, mock_http_client):
         "uf": "RJ",
         "municipio": "Rio de Janeiro",
     }
-    
+
     mock_http_client.post.return_value = AsyncMock(
         status=200,
         json=AsyncMock(
@@ -96,7 +95,7 @@ async def test_classify_lead(agent, mock_http_client):
         "consumo_12m_kwh": 4000,
         "fatura_media": 800,
     }
-    
+
     mock_http_client.post.return_value = AsyncMock(
         status=200,
         json=AsyncMock(
@@ -134,7 +133,7 @@ async def test_select_generation_modality(agent):
         "has_roof": True,
         "multiple_ucs": False,
     }
-    
+
     # Act
     result = await agent.select_generation_modality(lead_id, classification, preferences)
 
@@ -157,7 +156,7 @@ async def test_perform_viability_analysis(agent, mock_http_client):
         "tilt_deg": 20,
         "azimuth_deg": 180,
     }
-    
+
     mock_http_client.post.return_value = AsyncMock(
         status=200,
         json=AsyncMock(
@@ -203,9 +202,9 @@ async def test_evaluate_economics(agent, mock_http_client):
         "tariff_group": "B1",
         "consumer_class": "RESIDENCIAL",
     }
-    
+
     expected_kwh_year = system_size_kwp * viability_data["hsp"] * 365 * viability_data["pr"]
-    
+
     mock_http_client.post.return_value = AsyncMock(
         status=200,
         json=AsyncMock(
@@ -251,7 +250,7 @@ async def test_size_system(agent):
         "pr": 0.80,
         "system_loss_fraction": 0.14,
     }
-    
+
     # Act
     result = await agent.size_system(lead_id, consumo_anual, viability_data)
 
@@ -305,7 +304,7 @@ async def test_generate_recommendations(agent, mock_http_client):
             "tir": 0.28,
         },
     }
-    
+
     mock_http_client.post.return_value = AsyncMock(
         status=200,
         json=AsyncMock(
@@ -364,7 +363,7 @@ async def test_emit_event(agent, mock_nats_client):
         "source": "landing",
         "consent": True,
     }
-    
+
     # Act
     result = await agent.emit_event(event_type, payload)
 
@@ -390,7 +389,7 @@ async def test_orchestrate_pre_process(agent):
          patch.object(agent, 'evaluate_economics', new_callable=AsyncMock) as mock_economics, \
          patch.object(agent, 'generate_recommendations', new_callable=AsyncMock) as mock_recommendations, \
          patch.object(agent, 'emit_event', new_callable=AsyncMock) as mock_emit:
-        
+
         lead_id = str(uuid.uuid4())
         lead_data = {
             "name": "João Silva",
@@ -411,7 +410,7 @@ async def test_orchestrate_pre_process(agent):
             "tilt_deg": 20,
             "azimuth_deg": 180,
         }
-        
+
         # Mock de respostas
         validated_lead = {
             "lead_id": lead_id,
@@ -423,21 +422,21 @@ async def test_orchestrate_pre_process(agent):
             "lon": -43.2,
         }
         mock_create_lead.return_value = validated_lead
-        
+
         classification = {
             "tariff_group": "B1",
             "consumer_class": "RESIDENCIAL",
             "uc_type": "RESIDENCIAL",
         }
         mock_classify.return_value = classification
-        
+
         modality = {
             "generation_modality": "AUTO_LOCAL",
             "principal_uc": "UC123456",
             "members": [],
         }
         mock_select_modality.return_value = modality
-        
+
         viability = {
             "viability_id": str(uuid.uuid4()),
             "hsp": 5.0,
@@ -446,7 +445,7 @@ async def test_orchestrate_pre_process(agent):
             "status": "viable",
         }
         mock_viability.return_value = viability
-        
+
         sizing_results = {
             "base": {
                 "kwp": 5.0,
@@ -465,7 +464,7 @@ async def test_orchestrate_pre_process(agent):
             },
         }
         mock_size.return_value = sizing_results
-        
+
         economics_results = {
             "base": {
                 "economics_id": str(uuid.uuid4()),
@@ -486,14 +485,14 @@ async def test_orchestrate_pre_process(agent):
                 "tir": 0.28,
             },
         }
-        
+
         # Mock de economics para cada tier
         mock_economics.side_effect = [
             economics_results["base"],
             economics_results["plus"],
             economics_results["pro"],
         ]
-        
+
         recommendations = {
             "recommendation_id": str(uuid.uuid4()),
             "lead_id": lead_id,
@@ -526,7 +525,7 @@ async def test_orchestrate_pre_process(agent):
             "preferred_tier": "plus",
         }
         mock_recommendations.return_value = recommendations
-        
+
         mock_emit.return_value = {"status": "emitted", "event_type": ""}
 
         # Act
@@ -541,7 +540,7 @@ async def test_orchestrate_pre_process(agent):
         assert mock_economics.call_count == 3  # Uma vez para cada tier
         assert mock_recommendations.called
         assert mock_emit.call_count >= 4  # Pelo menos 4 eventos devem ser emitidos
-        
+
         assert "lead" in result
         assert "classification" in result
         assert "modality" in result
@@ -550,7 +549,7 @@ async def test_orchestrate_pre_process(agent):
         assert "economics" in result
         assert "recommendations" in result
         assert "events" in result
-        
+
         assert result["lead"]["lead_id"] == lead_id
         assert len(result["recommendations"]["recommendations"]) == 3
-        assert len(result["events"]) >= 4
+        assert len(result["events"]) >= 4        assert len(result["events"]) >= 4

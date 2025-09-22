@@ -4,19 +4,18 @@ Este módulo implementa um servidor FastAPI que expõe as skills do
 PREOrchestratorAgent através do protocolo MCP.
 """
 
-import os
+import asyncio
 import json
 import logging
-import asyncio
-from typing import Dict, Any, Optional
-from uuid import uuid4
+import os
 from datetime import datetime
+from typing import Any, Dict, Optional
+from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 import httpx
-
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pre_orchestrator.agent import PREOrchestratorAgent
 
 # Configuração de logging
@@ -58,14 +57,14 @@ async def handle_mcp_request(request: Request):
     try:
         body = await request.json()
         logger.info(f"Recebida requisição MCP: {body}")
-        
+
         # Extrair informações da requisição
         skill_id = body.get("skill", {}).get("id", "")
         parameters = body.get("skill", {}).get("parameters", {})
-        
+
         # Executar skill correspondente
         result = await execute_skill(skill_id, parameters)
-        
+
         # Montar resposta MCP
         response = {
             "status": "success",
@@ -74,9 +73,9 @@ async def handle_mcp_request(request: Request):
                 "result": result
             }
         }
-        
+
         return JSONResponse(content=response)
-    
+
     except Exception as e:
         logger.error(f"Erro ao processar requisição MCP: {str(e)}")
         error_id = str(uuid4())
@@ -95,56 +94,56 @@ async def handle_mcp_request(request: Request):
 async def execute_skill(skill_id: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
     """
     Executa a skill do agente com base no ID e parâmetros.
-    
+
     Args:
         skill_id: ID da skill a ser executada.
         parameters: Parâmetros para a skill.
-        
+
     Returns:
         Resultado da execução da skill.
     """
     if skill_id == "create_update_lead":
         return await agent.create_update_lead(parameters)
-    
+
     elif skill_id == "classify_consumer":
         lead_id = parameters.get("lead_id")
         classification_data = {
             k: v for k, v in parameters.items() if k != "lead_id"
         }
         return await agent.classify_consumer(lead_id, classification_data)
-    
+
     elif skill_id == "select_modality":
         lead_id = parameters.get("lead_id")
         modality_data = {
             k: v for k, v in parameters.items() if k != "lead_id"
         }
         return await agent.select_modality(lead_id, modality_data)
-    
+
     elif skill_id == "calculate_viability":
         return await agent.calculate_viability(parameters)
-    
+
     elif skill_id == "evaluate_economics":
         return await agent.evaluate_economics(parameters)
-    
+
     elif skill_id == "size_system":
         return agent.size_system(parameters)
-    
+
     elif skill_id == "generate_recommendations":
         lead_id = parameters.get("lead_id")
         reco_data = {
             k: v for k, v in parameters.items() if k != "lead_id"
         }
         return await agent.generate_recommendations(lead_id, reco_data)
-    
+
     elif skill_id == "emit_event":
         event_type = parameters.get("event_type")
         payload = parameters.get("payload", {})
         await agent.emit_event(event_type, payload)
         return {"event_emitted": True, "event_type": event_type}
-    
+
     elif skill_id == "orchestrate_pre_process":
         return await agent.orchestrate_pre_process(parameters)
-    
+
     else:
         raise HTTPException(
             status_code=400,
@@ -172,5 +171,7 @@ async def shutdown_event():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", "8000"))
+    host = os.getenv("HOST", "0.0.0.0")
+    uvicorn.run(app, host=host, port=port)    port = int(os.getenv("PORT", "8000"))
     host = os.getenv("HOST", "0.0.0.0")
     uvicorn.run(app, host=host, port=port)

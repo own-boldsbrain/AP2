@@ -9,3 +9,4 @@ Solar Hub.
 from .agent import PREOrchestratorAgent
 
 __all__ = ["PREOrchestratorAgent"]
+__all__ = ['PREOrchestratorAgent']

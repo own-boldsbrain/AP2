@@ -206,42 +206,44 @@ async def insert_sample_data(conn: asyncpg.Connection) -> None:
     for table_data in SAMPLE_DATA:
         table = table_data["table"]
         data = table_data["data"]
-        
+
         for record in data:
             columns = list(record.keys())
-            placeholders = [f"${i+1}" for i in range(len(columns))]
+            placeholders = [f'${i + 1}' for i in range(len(columns))]
             values = list(record.values())
-            
+
             query = f"""
             INSERT INTO {table} ({', '.join(columns)})
             VALUES ({', '.join(placeholders)})
             ON CONFLICT (id) DO NOTHING
             """
-            
+
             await conn.execute(query, *values)
-            logger.info(f"Inserido registro em {table}")
+            logger.info(f'Inserido registro em {table}')
 
 
 async def main() -> None:
     """Função principal para executar a migração."""
     try:
         conn = await asyncpg.connect(DATABASE_URL)
-        logger.info("Conexão com o banco de dados estabelecida")
-        
+        logger.info('Conexão com o banco de dados estabelecida')
+
         await create_tables(conn)
         await create_indexes(conn)
-        
+
         # Verifique se as tabelas têm dados antes de inserir dados de exemplo
-        count = await conn.fetchval("SELECT COUNT(*) FROM pre_orchestration")
+        count = await conn.fetchval('SELECT COUNT(*) FROM pre_orchestration')
         if count == 0:
-            logger.info("Inserindo dados de exemplo...")
+            logger.info('Inserindo dados de exemplo...')
             await insert_sample_data(conn)
         else:
-            logger.info("Dados já existem, pulando inserção de dados de exemplo")
-        
+            logger.info(
+                'Dados já existem, pulando inserção de dados de exemplo'
+            )
+
         await conn.close()
         logger.info("Migração concluída com sucesso")
-    
+
     except Exception as e:
         logger.error(f"Erro durante a migração: {e}")
         raise

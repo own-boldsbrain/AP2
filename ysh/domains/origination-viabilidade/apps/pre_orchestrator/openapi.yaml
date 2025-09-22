@@ -3,11 +3,11 @@ info:
   title: PRE Orchestrator Agent API
   description: |-
     API para o agente orquestrador PRE do Yello Solar Hub (YSH) no domínio de origination-viabilidade.
-    
+
     O agente orquestra todo o fluxo desde a captação do lead até a geração de propostas para sistemas solares,
     com enfoque na acurácia técnica, regulatória e econômica.
   version: 1.0.0
-  
+
 servers:
   - url: http://localhost:8020
     description: Servidor local
