@@ -22,3 +22,20 @@ CREATE TABLE IF NOT EXISTS ysh.leads (
   region TEXT,
   status TEXT
 );
+
+CREATE TABLE IF NOT EXISTS ysh.lead_geo_kpis (
+  composite_key TEXT PRIMARY KEY,
+  lead_id UUID UNIQUE REFERENCES ysh.leads(lead_id),
+  cpf TEXT NOT NULL,
+  cep TEXT NOT NULL,
+  latitude DOUBLE PRECISION NOT NULL,
+  longitude DOUBLE PRECISION NOT NULL,
+  properties JSONB DEFAULT '{}'::jsonb,
+  kpis JSONB DEFAULT '{}'::jsonb,
+  geojson JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS lead_geo_kpis_identity_idx
+  ON ysh.lead_geo_kpis (cpf, cep, latitude, longitude);
