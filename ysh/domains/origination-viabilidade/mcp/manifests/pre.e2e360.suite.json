@@ -1,0 +1,262 @@
+{
+  "version": "1.0.0",
+  "domain": "origination-viabilidade",
+  "updated_at": "2024-05-01T00:00:00Z",
+  "id": "pre.e2e360.suite",
+  "name": "PRE Origination E2E 360 Suite",
+  "description": "Orquestração MCP ponta-a-ponta do blueprint PRE (lead → viabilidade → recomendações) com delegações para serviços de dados e eventos.",
+  "type": "orchestrator",
+  "mission": "Garantir cobertura 360° da jornada PRE incluindo dados regulatórios, cálculos pvlib, economia e publicação de eventos NATS.",
+  "capabilities": {
+    "extensions": [
+      {
+        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+        "description": "Interoperabilidade com agentes AP2 para ofertas financeiras.",
+        "required": false
+      }
+    ],
+    "contexts": [
+      "YSH/Origination",
+      "YSH/Viability",
+      "YSH/Economics"
+    ]
+  },
+  "dependencies": {
+    "agents": [
+      {
+        "id": "pre_orchestrator_agent",
+        "manifest": "./pre_orchestrator_agent.json",
+        "role": "Agente que coordena skills PRE via FastAPI/NATS.",
+        "transport": ["MCP"]
+      },
+      {
+        "id": "solar_viability.agent",
+        "manifest": "./solar_viability.agent.json",
+        "role": "Executor pvlib/NASA para cálculos solares.",
+        "transport": ["MCP", "A2A"]
+      },
+      {
+        "id": "aneel.tariffs.agent",
+        "manifest": "./aneel.tariffs.agent.json",
+        "role": "Fornecedor de componentes tarifários TE/TUSD.",
+        "transport": ["MCP"]
+      },
+      {
+        "id": "aneel.kpis.agent",
+        "manifest": "./aneel.kpis.agent.json",
+        "role": "Consulta KPIs regulatórios para benchmarking.",
+        "transport": ["MCP"]
+      },
+      {
+        "id": "aneel.utilities.agent",
+        "manifest": "./aneel.utilities.agent.json",
+        "role": "Catálogo de distribuidoras, tarifas e metadados.",
+        "transport": ["MCP"]
+      }
+    ],
+    "services": [
+      {
+        "name": "nats_bus",
+        "type": "messaging",
+        "protocol": "nats://",
+        "topics": [
+          "viability.requested.v1",
+          "viability.completed.v1",
+          "recommendation.bundle.created.v1"
+        ]
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "pre.e2e.orchestrate_pipeline",
+      "summary": "Executa toda a jornada PRE com emissão de eventos e geração de ofertas Base/Plus/Pro.",
+      "input_schema": {
+        "type": "object",
+        "required": ["lead", "consumption"],
+        "properties": {
+          "lead": {
+            "type": "object",
+            "required": ["lead_id", "name", "email", "phone", "consent"],
+            "properties": {
+              "lead_id": {"type": "string"},
+              "name": {"type": "string"},
+              "email": {"type": "string", "format": "email"},
+              "phone": {"type": "string"},
+              "consent": {"type": "boolean"},
+              "source": {"type": "string"},
+              "address": {"type": "object"},
+              "geo": {"type": "object", "properties": {"lat": {"type": "number"}, "lon": {"type": "number"}}}
+            }
+          },
+          "consumption": {
+            "type": "object",
+            "required": ["tariff_group", "consumer_class"],
+            "properties": {
+              "tariff_group": {"type": "string"},
+              "consumer_class": {"type": "string"},
+              "consumer_subclass": {"type": "string"},
+              "uc_type": {"type": "string"},
+              "annual_kwh": {"type": "number"},
+              "peak_share_pct": {"type": "number"}
+            }
+          },
+          "preferences": {"type": "object"},
+          "debug_mode": {"type": "boolean", "default": false}
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["recommendations", "events"],
+        "properties": {
+          "recommendations": {
+            "type": "array",
+            "items": {"type": "object"},
+            "description": "Ofertas Base/Plus/Pro com indicadores financeiros."
+          },
+          "events": {"type": "array", "items": {"type": "string"}},
+          "viability": {"type": "object"},
+          "tariff_profile": {"type": "object"},
+          "economics": {"type": "object"}
+        }
+      },
+      "playbook": [
+        {
+          "step": 1,
+          "delegate": "pre_orchestrator_agent.create_update_lead",
+          "description": "Persistir/atualizar dados do lead com consentimento LGPD."
+        },
+        {
+          "step": 2,
+          "delegate": "pre_orchestrator_agent.classify_consumer",
+          "description": "Definir classe, subclasse e tipo de UC a partir do consumo."
+        },
+        {
+          "step": 3,
+          "delegate": "pre_orchestrator_agent.select_modality",
+          "description": "Escolher modalidade de geração e publicar evento viability.requested.v1."
+        },
+        {
+          "step": 4,
+          "delegate": "solar_viability.agent.viability.compute",
+          "description": "Calcular geração (kWh/ano, PR) com pvlib e NASA POWER."
+        },
+        {
+          "step": 5,
+          "delegate": "aneel.tariffs.agent.aneel.tariffs.profile.build",
+          "description": "Construir tariff_profile para perfil do cliente."
+        },
+        {
+          "step": 6,
+          "delegate": "solar_viability.agent.economics.evaluate",
+          "description": "Calcular ROI, Payback e TIR com base em capex/opex."
+        },
+        {
+          "step": 7,
+          "delegate": "pre_orchestrator_agent.generate_recommendations",
+          "description": "Gerar pacotes Base/Plus/Pro e emitir recommendation.bundle.created.v1."
+        }
+      ],
+      "success_signals": [
+        "events inclui 'viability.completed.v1'",
+        "recommendations possui 3 ofertas",
+        "economics.tir_pct > 0"
+      ],
+      "failure_modes": [
+        "Dados de lead incompletos",
+        "Erro de rede em NASA POWER",
+        "Tarifa não encontrada para distribuidora"
+      ]
+    },
+    {
+      "name": "pre.e2e.evaluate_site",
+      "summary": "Atalho MCP para validar rapidamente um projeto solar usando ferramentas delegadas.",
+      "input_schema": {
+        "type": "object",
+        "required": ["lat", "lon", "tariff_profile", "capex", "opex"],
+        "properties": {
+          "lat": {"type": "number"},
+          "lon": {"type": "number"},
+          "tilt_deg": {"type": "number", "default": 20},
+          "azimuth_deg": {"type": "number", "default": 180},
+          "system_loss_fraction": {"type": "number", "default": 0.14},
+          "tariff_profile": {"type": "object"},
+          "capex": {"type": "number"},
+          "opex": {"type": "number"},
+          "lifetime_years": {"type": "number", "default": 25}
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["viability", "economics"],
+        "properties": {
+          "viability": {"type": "object"},
+          "economics": {"type": "object"},
+          "events": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "playbook": [
+        {
+          "step": 1,
+          "delegate": "solar_viability.agent.viability.compute",
+          "description": "Executar cadeia pvlib (irradiância, performance, PR)."
+        },
+        {
+          "step": 2,
+          "delegate": "solar_viability.agent.economics.evaluate",
+          "description": "Calcular indicadores financeiros e série de cashflow."
+        },
+        {
+          "step": 3,
+          "delegate": "pre_orchestrator_agent.emit_event",
+          "description": "Publicar eventos viability.completed.v1 com payload agregado."
+        }
+      ],
+      "success_signals": [
+        "viability.pr calculado",
+        "economics.roi_pct",
+        "events contém 'viability.completed.v1'"
+      ],
+      "failure_modes": [
+        "Latitude/Longitude inválidos",
+        "Capex <= 0",
+        "Erro NATS ao publicar evento"
+      ]
+    }
+  ],
+  "events": {
+    "publishes": [
+      "lead.captured.v1",
+      "viability.requested.v1",
+      "viability.completed.v1",
+      "recommendation.bundle.created.v1"
+    ],
+    "consumes": [
+      "viability.requested.v1",
+      "ap2.intent.created.v1"
+    ]
+  },
+  "observability": {
+    "logs": {
+      "pre_orchestrator": {
+        "path": "domains/origination-viabilidade/apps/pre_orchestrator/.logs/server.log",
+        "format": "structured-json"
+      }
+    },
+    "metrics": [
+      {
+        "name": "viability_latency_ms",
+        "description": "Tempo entre request e resposta do serviço pvlib.",
+        "target": {"p95": 3000}
+      },
+      {
+        "name": "nats_publish_errors",
+        "description": "Número de falhas ao publicar eventos PRE.",
+        "target": {"max": 0}
+      }
+    ],
+    "traces": {
+      "propagation": "context_id herdado do orchestrate_pre_process"
+    }
+  }
+}

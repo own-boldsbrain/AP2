@@ -27,6 +27,10 @@ Desenvolvedores podem implementar suas próprias ferramentas para integrar com p
 
 Estamos trabalhando em servidores MCP para AP2.
 
+### Suite MCP E2E 360°
+
+O manifesto [`ap2.e2e360.suite.json`](../../domains/ap2/mcp/manifests/ap2.e2e360.suite.json) consolida os fluxos humano-presente e humano-não-presente, bem como o onboarding de credenciais compatíveis. Ele referencia explicitamente os agentes de Shopping, Merchant, Credentials Provider e Payment Processor, define playbooks MCP (`ap2.e2e.human_present_checkout`, `ap2.e2e.human_absent_checkout`, `ap2.e2e.enable_payment_method`) e aponta as métricas de observabilidade necessárias (`checkout_latency_ms`, `otp_retry_count`). Junto ao manifesto [`pre.e2e360.suite.json`](../../domains/origination-viabilidade/mcp/manifests/pre.e2e360.suite.json), cobrimos 360° do blueprint PRE ↔ AP2 descrito no PRD.
+
 ---
 
 Em essência, **A2A e MCP fornecem as camadas fundamentais de comunicação e interação para agentes de IA**, permitindo que eles se conectem e executem tarefas. **AP2 constrói sobre essas camadas adicionando uma extensão de pagamentos especializada e segura**, abordando os desafios únicos de autorização, autenticidade e responsabilidade em pagamentos orientados por IA. Isso permite que agentes naveguem, negociem, comprem e vendam com confiança em nome dos usuários, estabelecendo prova verificável de intenção e responsabilidade clara nas transações.

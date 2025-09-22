@@ -1,0 +1,370 @@
+{
+  "version": "1.0.0",
+  "domain": "ap2",
+  "updated_at": "2024-05-01T00:00:00Z",
+  "id": "ap2.e2e360.suite",
+  "name": "AP2 Payments E2E 360 Suite",
+  "description": "Suite MCP que descreve os fluxos ponta-a-ponta do protocolo AP2 para compras humanas e automáticas, incluindo credenciais, mandates e telemetria.",
+  "type": "orchestrator",
+  "mission": "Cobrir 360° dos fluxos de pagamento AP2 (intenção → carrinho → mandato → autenticação → recibo) com observabilidade e cenários de risco.",
+  "capabilities": {
+    "extensions": [
+      {
+        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+        "description": "Supports the Agent Payments Protocol.",
+        "required": true
+      }
+    ],
+    "contexts": [
+      "AP2/Payments",
+      "AP2/HumanPresent",
+      "AP2/HumanNotPresent",
+      "AP2/Credentials"
+    ]
+  },
+  "dependencies": {
+    "agents": [
+      {
+        "id": "shopping_agent",
+        "manifest": "./shopping_agent.json",
+        "role": "Shopping ADK responsável por coletar mandato de intenção, montar carrinho e conduzir usuário.",
+        "transport": ["A2A", "MCP"]
+      },
+      {
+        "id": "merchant_agent",
+        "manifest": "./merchant_agent.json",
+        "role": "Comerciante que mantém catálogo, carrinho, mandatos e delega pagamentos ao processador.",
+        "transport": ["A2A", "MCP"]
+      },
+      {
+        "id": "credentials_provider_agent",
+        "manifest": "./credentials_provider_agent.json",
+        "role": "Provedor de credenciais que tokeniza métodos, valida OTP e mantém contas confiáveis.",
+        "transport": ["A2A", "MCP"]
+      },
+      {
+        "id": "merchant_payment_processor_agent",
+        "manifest": "./merchant_payment_processor_agent.json",
+        "role": "Processador do comerciante responsável por desafios, autenticação e autorização final.",
+        "transport": ["A2A", "MCP"]
+      }
+    ],
+    "services": [
+      {
+        "name": "watch_log",
+        "type": "file",
+        "path": ".logs/watch.log",
+        "purpose": "Armazenar telemetria e instruções do fluxo AP2 para auditoria."
+      },
+      {
+        "name": "risk_memory_store",
+        "type": "in-memory",
+        "purpose": "Compartilhar risk_data entre shopping agent, merchant e processador."
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "ap2.e2e.human_present_checkout",
+      "summary": "Executa o fluxo humano-presente ponta-a-ponta (mandatos → carrinho → tokenização → OTP → recibo).",
+      "input_schema": {
+        "type": "object",
+        "required": ["user", "cart", "presence_channel"],
+        "properties": {
+          "user": {
+            "type": "object",
+            "required": ["id", "display_name"],
+            "properties": {
+              "id": {"type": "string"},
+              "display_name": {"type": "string"},
+              "contact": {"type": "object"},
+              "risk_hints": {"type": "object"}
+            }
+          },
+          "cart": {
+            "type": "object",
+            "required": ["items"],
+            "properties": {
+              "cart_id": {"type": "string"},
+              "items": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "merchant": {"type": "string"},
+              "totals": {"type": "object"}
+            }
+          },
+          "shipping_address": {"type": "object"},
+          "presence_channel": {
+            "type": "string",
+            "enum": ["human_present"],
+            "description": "Identifica que o usuário está presente (OTP in-band)."
+          },
+          "payment_preferences": {"type": "object"},
+          "debug_mode": {"type": "boolean", "default": false}
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["receipt", "mandates", "events"],
+        "properties": {
+          "receipt": {"type": "object"},
+          "mandates": {
+            "type": "object",
+            "properties": {
+              "cart_mandate": {"type": "object"},
+              "payment_mandate": {"type": "object"}
+            }
+          },
+          "events": {"type": "array", "items": {"type": "string"}},
+          "watch_log_path": {"type": "string"},
+          "latency_ms": {"type": "number"}
+        }
+      },
+      "playbook": [
+        {
+          "step": 1,
+          "delegate": "shopping_agent.create_intent_mandate",
+          "description": "Gerar IntentMandate baseado no pedido natural do usuário e registrar no watch.log."
+        },
+        {
+          "step": 2,
+          "delegate": "merchant_agent.update_cart",
+          "description": "Criar/atualizar carrinho com totais e capturar impostos/frete."
+        },
+        {
+          "step": 3,
+          "delegate": "shopping_agent.checkout",
+          "description": "Solicitar métodos suportados, tokenizar credencial e coletar assinatura do CartMandate."
+        },
+        {
+          "step": 4,
+          "delegate": "merchant_agent.initiate_payment",
+          "description": "Encaminhar CartMandate e token ao processador, aguardando desafio OTP."
+        },
+        {
+          "step": 5,
+          "delegate": "merchant_payment_processor_agent.raise_challenge",
+          "description": "Emitir desafio OTP apropriado e registrar estado input_required."
+        },
+        {
+          "step": 6,
+          "delegate": "shopping_agent.handle_otp_challenge",
+          "description": "Coletar resposta OTP do usuário presente e enviar ao processador."
+        },
+        {
+          "step": 7,
+          "delegate": "merchant_payment_processor_agent.verify_challenge_response",
+          "description": "Validar resposta OTP, atualizar risk_data e preparar autorização."
+        },
+        {
+          "step": 8,
+          "delegate": "merchant_payment_processor_agent.complete_payment",
+          "description": "Finalizar pagamento com recibo e códigos de autorização."
+        },
+        {
+          "step": 9,
+          "delegate": "merchant_agent.dpc_finish",
+          "description": "Finalizar credencial digital e emitir eventos finais."
+        }
+      ],
+      "success_signals": [
+        "receipt.status == 'APPROVED'",
+        "events inclui 'ap2.checkout.completed.v1'",
+        "watch_log contém entries de todos os delegates"
+      ],
+      "failure_modes": [
+        "OTP inválido",
+        "shopping_agent_id não autorizado",
+        "PaymentMandate sem assinatura"
+      ]
+    },
+    {
+      "name": "ap2.e2e.human_absent_checkout",
+      "summary": "Fluxo humano-não-presente usando IntentMandate com TTL e callbacks.",
+      "input_schema": {
+        "type": "object",
+        "required": ["intent_mandate", "cart_blueprint", "callback"],
+        "properties": {
+          "intent_mandate": {"type": "object"},
+          "cart_blueprint": {"type": "object"},
+          "callback": {
+            "type": "object",
+            "required": ["uri"],
+            "properties": {
+              "uri": {"type": "string", "format": "uri"},
+              "auth": {"type": "object"}
+            }
+          },
+          "allowed_payment_networks": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "service_level_agreement_s": {"type": "number", "default": 600}
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["receipt", "callbacks"],
+        "properties": {
+          "receipt": {"type": "object"},
+          "callbacks": {"type": "array", "items": {"type": "object"}},
+          "mandates": {"type": "object"},
+          "events": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "playbook": [
+        {
+          "step": 1,
+          "delegate": "shopping_agent.create_intent_mandate",
+          "description": "Registrar mandato com regras de presença e limites."
+        },
+        {
+          "step": 2,
+          "delegate": "merchant_agent.search_catalog",
+          "description": "Construir CartBlueprint respeitando restrições do mandato."
+        },
+        {
+          "step": 3,
+          "delegate": "merchant_agent.create_cart_mandate",
+          "description": "Assinar CartMandate com fail-safe (número de revisões)."
+        },
+        {
+          "step": 4,
+          "delegate": "merchant_agent.initiate_payment",
+          "description": "Acionar pagamento offline e registrar challenge/tokenization."
+        },
+        {
+          "step": 5,
+          "delegate": "merchant_payment_processor_agent.handle_payment_mandate",
+          "description": "Validar PaymentMandate recebido e preparar autorização diferida."
+        },
+        {
+          "step": 6,
+          "delegate": "merchant_payment_processor_agent.complete_payment",
+          "description": "Concluir transação e disparar callbacks configurados."
+        }
+      ],
+      "success_signals": [
+        "callbacks incluem estado final",
+        "mandates.payment_mandate.ttl respeitado",
+        "events inclui 'ap2.checkout.completed.v1' ou 'ap2.checkout.declined.v1'"
+      ],
+      "failure_modes": [
+        "Mandato expirado",
+        "Merchant não suporta rede solicitada",
+        "Callback 5xx repetido"
+      ]
+    },
+    {
+      "name": "ap2.e2e.enable_payment_method",
+      "summary": "Onboarding/tokenação de um método suportado pelo comerciante para destravar checkout futuro.",
+      "input_schema": {
+        "type": "object",
+        "required": ["user", "credential"],
+        "properties": {
+          "user": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {"type": "string"},
+              "display_name": {"type": "string"}
+            }
+          },
+          "credential": {
+            "type": "object",
+            "required": ["scheme", "issuer"],
+            "properties": {
+              "scheme": {"type": "string", "enum": ["CARD", "PIX", "WALLET"]},
+              "issuer": {"type": "string"},
+              "last4": {"type": "string"},
+              "expiry": {"type": "string"}
+            }
+          },
+          "billing_address": {"type": "object"},
+          "risk_hints": {"type": "object"},
+          "debug_mode": {"type": "boolean", "default": false}
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["token", "mandate"],
+        "properties": {
+          "token": {"type": "string"},
+          "mandate": {"type": "object"},
+          "events": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "playbook": [
+        {
+          "step": 1,
+          "delegate": "merchant_agent.update_cart",
+          "description": "Consultar merchant para validar aceitação da credencial."
+        },
+        {
+          "step": 2,
+          "delegate": "credentials_provider_agent.get_eligible_payment_methods",
+          "description": "Listar métodos existentes e identificar lacunas."
+        },
+        {
+          "step": 3,
+          "delegate": "credentials_provider_agent.create_payment_credential_token",
+          "description": "Tokenizar credencial com consentimento explícito do usuário."
+        },
+        {
+          "step": 4,
+          "delegate": "credentials_provider_agent.sign_payment_mandate",
+          "description": "Gerar PaymentMandate assinado e compartilhar com merchant/shopping agent."
+        }
+      ],
+      "success_signals": [
+        "token emitido e armazenado no credentials_provider",
+        "events inclui 'ap2.credential.tokenized.v1' quando aplicável",
+        "merchant atualiza risk_data com método habilitado"
+      ],
+      "failure_modes": [
+        "Esquema não suportado",
+        "Tokenização falhou",
+        "Consentimento ausente"
+      ]
+    }
+  ],
+  "events": {
+    "publishes": [
+      "ap2.intent.created.v1",
+      "ap2.cart.updated.v1",
+      "ap2.checkout.challenge.v1",
+      "ap2.checkout.completed.v1",
+      "ap2.checkout.declined.v1",
+      "ap2.credential.tokenized.v1"
+    ],
+    "consumes": [
+      "ap2.checkout.challenge_response.v1",
+      "ap2.checkout.retry_requested.v1"
+    ]
+  },
+  "observability": {
+    "logs": {
+      "watch_log": {
+        "path": ".logs/watch.log",
+        "format": "line-delimited json",
+        "retention": "per scenario"
+      }
+    },
+    "metrics": [
+      {
+        "name": "checkout_latency_ms",
+        "description": "Tempo total entre IntentMandate e recibo.",
+        "target": {"p95": 5000}
+      },
+      {
+        "name": "otp_retry_count",
+        "description": "Número de tentativas de OTP por transação.",
+        "target": {"max": 3}
+      }
+    ],
+    "traces": {
+      "propagation": "context_id compartilhado em events e logs"
+    }
+  }
+}
