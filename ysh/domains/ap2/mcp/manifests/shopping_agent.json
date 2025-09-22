@@ -98,6 +98,30 @@
                 "required": ["transaction_id", "challenge_info"]
             },
             "tags": ["otp", "challenge", "verification"]
+        },
+        {
+            "id": "calculate_solar_position",
+            "name": "Calculate Solar Position",
+            "description": "Calculates the solar zenith and azimuth angles for a given location and date.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {
+                        "type": "number",
+                        "description": "Latitude of the location."
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "description": "Longitude of the location."
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "Date and time in ISO format (e.g., '2023-01-01T12:00:00')."
+                    }
+                },
+                "required": ["latitude", "longitude", "date"]
+            },
+            "tags": ["solar", "position", "calculation"]
         }
     ],
     "defaultInputModes": [

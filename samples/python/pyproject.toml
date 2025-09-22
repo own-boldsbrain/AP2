@@ -14,8 +14,10 @@ dependencies = [
     "google-adk",
     "google-genai",
     "httpx",
+    "pandas",
     "requests",
-    "ap2"
+    "ap2",
+    "pvlib"
 ]
 keywords = ["payments", "a2a", "ap2"]
 readme = "README.md"

@@ -115,6 +115,7 @@ root_agent = RetryingLlmAgent(
         tools.send_signed_payment_mandate_to_credentials_provider,
         tools.sign_mandates_on_user_device,
         tools.update_cart,
+        tools.calculate_solar_position,
     ],
     sub_agents=[
         shopper,
