@@ -2,11 +2,12 @@ import json
 import os
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, List, Dict, Optional, Union
 
-from fastapi import Body, FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import Body, FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field, validator
 
 
 @asynccontextmanager
@@ -19,15 +20,15 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 
 app = FastAPI(
     title='Artifact Service',
-    description='A service to store and retrieve artifacts.',
+    description='Serviço para armazenamento e recuperação de artefatos para swarms de agentes',
     version='0.1.0',
     lifespan=lifespan,
 )
 
-STORAGE_DIR = Path(os.getenv('ARTIFACT_STORAGE_DIR', './.artifacts'))
+STORAGE_DIR = Path(os.getenv('ARTIFACT_STORAGE_DIR', './data'))
 STORAGE_DIR.mkdir(exist_ok=True)
 
-artifact_index: dict[str, Path] = {}
+artifact_index: Dict[str, Path] = {}
 
 
 def load_index():
@@ -38,6 +39,13 @@ def load_index():
         for file_path in type_dir.glob('*.json'):
             artifact_id = file_path.stem
             artifact_index[artifact_id] = file_path
+            
+# Modelos comuns
+class SwarmContext(BaseModel):
+    """Contexto para coordenação de swarms."""
+    swarm_id: Optional[str] = None
+    trace_id: Optional[str] = None
+    parent_swarm_ids: Optional[List[str]] = None
 
 
 class Artifact(BaseModel):
