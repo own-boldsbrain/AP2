@@ -1,98 +1,87 @@
-"""Módulo para cálculos econômicos de sistemas fotovoltaicos."""
+"""Deterministic economic evaluation helpers used by the viability service."""
 
-from typing import List
+from __future__ import annotations
 
-from pydantic import BaseModel
+from typing import Dict, List
+
+from pydantic import BaseModel, Field
 
 
 class EconomicsIn(BaseModel):
-    """
-    Dados de entrada para avaliação econômica.
+    """Input contract for ``/tools/economics.evaluate``."""
 
-    Attributes:
-        kwh_year: Geração anual em kWh
-        tariff_profile: Perfil tarifário da distribuidora
-        capex: Custo de capital (R$)
-        opex: Custo operacional anual (R$)
-        lifetime_years: Vida útil do sistema em anos
-        degradation_pct_year: Degradação anual em porcentagem
-        discount_rate_pct: Taxa de desconto anual em porcentagem
-    """
-    kwh_year: float
-    tariff_profile: dict
-    capex: float
-    opex: float
-    lifetime_years: int = 25
-    degradation_pct_year: float = 0.5
-    discount_rate_pct: float = 10.0
+    kwh_year: float = Field(gt=0)
+    tariff_profile: Dict[str, float] = Field(default_factory=dict)
+    capex: float = Field(gt=0)
+    opex: float = Field(ge=0)
+    lifetime_years: int = Field(default=25, ge=1)
+    degradation_pct_year: float = Field(default=0.5, ge=0, lt=100)
+    discount_rate_pct: float = Field(default=10.0, ge=0)
 
 
 class EconomicsOut(BaseModel):
-    """
-    Resultado da avaliação econômica.
-
-    Attributes:
-        roi_pct: Retorno sobre investimento em porcentagem
-        payback_years: Tempo de retorno em anos
-        tir_pct: Taxa interna de retorno em porcentagem
-        cashflow: Fluxo de caixa anual
-    """
     roi_pct: float
     payback_years: float
     tir_pct: float
     cashflow: List[float]
 
 
-def evaluate(in_: EconomicsIn) -> EconomicsOut:
-    """
-    Avalia a viabilidade econômica de um sistema fotovoltaico.
+def evaluate(inp: EconomicsIn) -> EconomicsOut:
+    """Compute ROI, payback and IRR using a simplified cashflow model."""
 
-    Args:
-        in_: Dados de entrada para avaliação
+    tariff_r_per_kwh = (inp.tariff_profile.get("cents_per_kwh") or 100.0) / 100.0
+    energy = inp.kwh_year
+    cashflow: List[float] = []
 
-    Returns:
-        Resultado da avaliação econômica
-    """
-    # Simplificação: receita = kwh_year * tarifa média (R$/kWh)
-    tariff_r_per_kwh = (in_.tariff_profile.get("cents_per_kwh") or 100) / 100.0
-    cash = []
-    kwh = in_.kwh_year
+    for year in range(1, inp.lifetime_years + 1):
+        revenue = energy * tariff_r_per_kwh
+        net = revenue - inp.opex
+        if year == 1:
+            net -= inp.capex
+        cashflow.append(round(net, 2))
+        # apply yearly degradation
+        energy *= 1 - inp.degradation_pct_year / 100.0
 
-    # Calcula o fluxo de caixa para cada ano
-    for y in range(1, in_.lifetime_years + 1):
-        rev = kwh * tariff_r_per_kwh
-        net = rev - in_.opex
-        # No primeiro ano, subtrai o CAPEX
-        cash.append(net if y > 1 else net - in_.capex)
-        # Aplica degradação anual
-        kwh *= (1 - in_.degradation_pct_year / 100.0)
-
-    # Calcula o payback
-    cum = 0.0
-    payback = float(in_.lifetime_years)
-    for i, v in enumerate(cash, start=1):
-        cum += v
-        if cum >= 0:
-            payback = i
+    cumulative = 0.0
+    payback_years = float(inp.lifetime_years)
+    for idx, value in enumerate(cashflow, start=1):
+        cumulative += value
+        if cumulative >= 0:
+            payback_years = float(idx)
             break
 
-    # Calcula o ROI
-    roi = (sum(cash) / in_.capex) * 100 if in_.capex > 0 else 0.0
-
-    # TIR simplificada (busca bruta)
-    tir = 0.0
-    try:
-        for r in [x / 100 for x in range(1, 51)]:
-            npv = sum(cash[t] / ((1 + r) ** (t + 0)) for t in range(len(cash)))
-            if npv >= 0:
-                tir = r * 100
-                break
-    except Exception:
-        pass
+    roi_pct = round((sum(cashflow) / inp.capex) * 100.0, 1)
+    tir_pct = _compute_irr(cashflow, inp.discount_rate_pct)
 
     return EconomicsOut(
-        roi_pct=round(roi, 1),
-        payback_years=float(payback),
-        tir_pct=round(tir, 1),
-        cashflow=[round(x, 2) for x in cash]
-    )    )
+        roi_pct=roi_pct,
+        payback_years=payback_years,
+        tir_pct=tir_pct,
+        cashflow=cashflow,
+    )
+
+
+def _compute_irr(cashflow: List[float], fallback_rate_pct: float) -> float:
+    """Approximate the internal rate of return.
+
+    The function performs a bounded linear search which is deterministic and
+    dependency-free, making it ideal for unit tests.  If the cashflow never
+    becomes positive the provided ``fallback_rate_pct`` is returned.
+    """
+
+    target = fallback_rate_pct / 100.0
+    if not cashflow:
+        return round(target * 100, 1)
+
+    def npv(rate: float) -> float:
+        return sum(value / ((1 + rate) ** idx) for idx, value in enumerate(cashflow, start=1))
+
+    rate = 0.0
+    step = 0.001
+    max_rate = 0.5
+    while rate <= max_rate:
+        if npv(rate) >= 0:
+            return round(rate * 100, 1)
+        rate += step
+
+    return round(target * 100, 1)
