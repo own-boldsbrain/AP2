@@ -1,0 +1,374 @@
+openapi: 3.1.0
+info:
+  title: PRE Orchestrator Agent API
+  description: |-
+    API para o agente orquestrador PRE do Yello Solar Hub (YSH) no domínio de origination-viabilidade.
+    
+    O agente orquestra todo o fluxo desde a captação do lead até a geração de propostas para sistemas solares,
+    com enfoque na acurácia técnica, regulatória e econômica.
+  version: 1.0.0
+  
+servers:
+  - url: http://localhost:8020
+    description: Servidor local
+  - url: http://origination_api:8000
+    description: Servidor no ambiente Docker
+
+paths:
+  /health:
+    get:
+      summary: Verificar status de saúde do serviço
+      responses:
+        '200':
+          description: Status do serviço
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-09-21T10:15:30.123Z"
+
+  /mcp/pre_orchestrator:
+    post:
+      summary: Endpoint MCP para execução de skills do agente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MCPRequest'
+      responses:
+        '200':
+          description: Resposta de sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPResponse'
+        '500':
+          description: Erro de servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    MCPRequest:
+      type: object
+      required:
+        - skill
+      properties:
+        skill:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              description: ID da skill a ser executada
+              example: "orchestrate_pre_process"
+            parameters:
+              type: object
+              description: Parâmetros específicos para a skill
+
+    MCPResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        skill:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "orchestrate_pre_process"
+            result:
+              type: object
+              description: Resultado da execução da skill
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        error:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "550e8400-e29b-41d4-a716-446655440000"
+            message:
+              type: string
+              example: "Erro ao processar requisição"
+
+    Lead:
+      type: object
+      required:
+        - lead_id
+        - consent
+        - name
+        - email
+        - phone
+      properties:
+        lead_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        source:
+          type: string
+          example: "landing"
+        name:
+          type: string
+          example: "João Silva"
+        email:
+          type: string
+          format: email
+          example: "joao.silva@example.com"
+        phone:
+          type: string
+          example: "21999999999"
+        consent:
+          type: boolean
+          example: true
+        cep:
+          type: string
+          example: "22000-000"
+        uf:
+          type: string
+          example: "RJ"
+        municipio:
+          type: string
+          example: "Rio de Janeiro"
+        lat:
+          type: number
+          format: double
+          example: -22.9
+        lon:
+          type: number
+          format: double
+          example: -43.2
+
+    Classification:
+      type: object
+      required:
+        - tariff_group
+        - consumer_class
+        - uc_type
+      properties:
+        tariff_group:
+          type: string
+          example: "B1"
+        consumer_class:
+          type: string
+          enum: [RESIDENCIAL, COMERCIAL, INDUSTRIAL, RURAL, PODER_PUBLICO]
+          example: "RESIDENCIAL"
+        consumer_subclass:
+          type: string
+          example: ""
+        uc_type:
+          type: string
+          enum: [RESIDENCIAL, COMERCIAL, INDUSTRIAL, RURAL, COND_MUC, MIXED]
+          example: "RESIDENCIAL"
+
+    Modality:
+      type: object
+      required:
+        - generation_modality
+      properties:
+        generation_modality:
+          type: string
+          enum: [AUTO_LOCAL, AUTO_REMOTO, COMPARTILHADA, MUC]
+          example: "AUTO_LOCAL"
+        principal_uc:
+          type: string
+          example: "UC123456"
+        members:
+          type: array
+          items:
+            type: string
+          example: []
+
+    Viability:
+      type: object
+      required:
+        - lat
+        - lon
+      properties:
+        lat:
+          type: number
+          format: double
+          example: -22.9
+        lon:
+          type: number
+          format: double
+          example: -43.2
+        tilt_deg:
+          type: number
+          format: double
+          example: 20
+        azimuth_deg:
+          type: number
+          format: double
+          example: 180
+        mount_type:
+          type: string
+          example: "fixed"
+        system_loss_fraction:
+          type: number
+          format: double
+          example: 0.14
+        meteo_source:
+          type: string
+          example: "NASA_POWER"
+
+    Economics:
+      type: object
+      required:
+        - kwh_year
+        - tariff_profile
+        - capex
+      properties:
+        kwh_year:
+          type: number
+          format: double
+          example: 8350
+        tariff_profile:
+          type: object
+          example:
+            cents_per_kwh: 120
+        capex:
+          type: number
+          format: double
+          example: 52000
+        opex:
+          type: number
+          format: double
+          example: 800
+
+    Sizing:
+      type: object
+      required:
+        - consumo_anual
+        - hsp
+        - pr
+      properties:
+        consumo_anual:
+          type: number
+          format: double
+          example: 4000
+        hsp:
+          type: number
+          format: double
+          example: 5.0
+        pr:
+          type: number
+          format: double
+          example: 0.80
+        perdas:
+          type: number
+          format: double
+          example: 0.14
+        fator_tier:
+          type: number
+          format: double
+          example: 1.30
+
+    Recommendations:
+      type: object
+      required:
+        - lead_id
+        - band_code
+        - kwp
+        - expected_kwh_year
+      properties:
+        lead_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        tier_code:
+          type: string
+          example: "T130"
+        band_code:
+          type: string
+          example: "M"
+        kwp:
+          type: number
+          format: double
+          example: 7.45
+        expected_kwh_year:
+          type: number
+          format: double
+          example: 8350
+        preferred_tier:
+          type: string
+          example: "T130"
+
+    EventEmit:
+      type: object
+      required:
+        - event_type
+        - payload
+      properties:
+        event_type:
+          type: string
+          enum: [lead.captured.v1, consumption.profile.detected.v1, system.sized.v1, recommendation.bundle.created.v1, generation.modality.selected.v1, viability.requested.v1, viability.completed.v1]
+          example: "lead.captured.v1"
+        payload:
+          type: object
+          example:
+            lead_id: "550e8400-e29b-41d4-a716-446655440000"
+            source: "landing"
+            consent: true
+
+    OrchestrateProcess:
+      type: object
+      required:
+        - lead_data
+      properties:
+        lead_data:
+          $ref: '#/components/schemas/Lead'
+        consumption_data:
+          type: object
+          properties:
+            consumo_12m_kwh:
+              type: number
+              format: double
+              example: 4000
+        preferences:
+          type: object
+          properties:
+            preferred_tier:
+              type: string
+              example: "T130"
+            has_roof:
+              type: boolean
+              example: true
+            multiple_ucs:
+              type: boolean
+              example: false
+            tilt_deg:
+              type: number
+              format: double
+              example: 20
+            azimuth_deg:
+              type: number
+              format: double
+              example: 180
+        tariff_group:
+          type: string
+          example: "B1"
+        consumer_class:
+          type: string
+          example: "RESIDENCIAL"
+        uc_type:
+          type: string
+          example: "RESIDENCIAL"

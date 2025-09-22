@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  pre_orchestrator:
+    build:
+      context: ../../
+      dockerfile: apps/pre_orchestrator/Dockerfile
+    ports:
+      - "8020:8000"
+    depends_on:
+      - nats
+      - origination_api
+      - viability_service
+      - aneel_tariffs
+      - aneel_kpis
+      - aneel_utilities
+    environment:
+      - ORIGINATION_API_URL=http://origination_api:8000
+      - VIABILITY_SERVICE_URL=http://viability_service:8010
+      - ANEEL_TARIFFS_URL=http://aneel_tariffs:8011
+      - ANEEL_KPIS_URL=http://aneel_kpis:8012
+      - ANEEL_UTILITIES_URL=http://aneel_utilities:8013
+      - NATS_URL=nats://nats:4222
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+  origination_api:
+    image: origination_api:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+  viability_service:
+    image: viability_service:latest
+    ports:
+      - "8010:8000"
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+  aneel_tariffs:
+    image: aneel_tariffs:latest
+    ports:
+      - "8011:8000"
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+  aneel_kpis:
+    image: aneel_kpis:latest
+    ports:
+      - "8012:8000"
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+  aneel_utilities:
+    image: aneel_utilities:latest
+    ports:
+      - "8013:8000"
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+  nats:
+    image: nats:2.9-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: "--jetstream --http_port 8222"
+    networks:
+      - ysh_network
+    restart: unless-stopped
+
+networks:
+  ysh_network:
+    driver: bridge
