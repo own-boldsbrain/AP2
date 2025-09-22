@@ -1,0 +1,95 @@
+{
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Contract",
+      "description": "Schema for a contract artifact, representing the initial requirements and analysis for a solar viability study.",
+      "type": "object",
+      "properties": {
+            "contractId": {
+                  "type": "string",
+                  "description": "Unique identifier for the contract.",
+                  "format": "uuid"
+            },
+            "customerId": {
+                  "type": "string",
+                  "description": "Identifier for the customer."
+            },
+            "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Timestamp of when the contract was created."
+            },
+            "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Timestamp of the last update."
+            },
+            "status": {
+                  "type": "string",
+                  "enum": [
+                        "draft",
+                        "pending_analysis",
+                        "analysis_complete",
+                        "closed"
+                  ],
+                  "description": "The current status of the contract."
+            },
+            "requirements": {
+                  "type": "object",
+                  "properties": {
+                        "location": {
+                              "type": "object",
+                              "properties": {
+                                    "address": {
+                                          "type": "string"
+                                    },
+                                    "latitude": {
+                                          "type": "number"
+                                    },
+                                    "longitude": {
+                                          "type": "number"
+                                    }
+                              },
+                              "required": [
+                                    "latitude",
+                                    "longitude"
+                              ]
+                        },
+                        "energyProfile": {
+                              "type": "object",
+                              "properties": {
+                                    "averageMonthlyConsumptionKwh": {
+                                          "type": "number"
+                                    },
+                                    "utilityProvider": {
+                                          "type": "string"
+                                    },
+                                    "tariffClass": {
+                                          "type": "string"
+                                    }
+                              }
+                        },
+                        "objectives": {
+                              "type": "array",
+                              "items": {
+                                    "type": "string"
+                              },
+                              "description": "List of customer objectives (e.g., cost reduction, energy independence)."
+                        }
+                  },
+                  "required": [
+                        "location"
+                  ]
+            },
+            "initialAnalysis": {
+                  "type": "object",
+                  "description": "Results from the Investigation and Detection swarms."
+            }
+      },
+      "required": [
+            "contractId",
+            "customerId",
+            "createdAt",
+            "status",
+            "requirements"
+      ]
+}

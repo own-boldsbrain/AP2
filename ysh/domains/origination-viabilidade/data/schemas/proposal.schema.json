@@ -1,0 +1,117 @@
+{
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Proposal",
+      "description": "Schema for a proposal artifact, containing the detailed solar viability analysis and recommendations.",
+      "type": "object",
+      "properties": {
+            "proposalId": {
+                  "type": "string",
+                  "description": "Unique identifier for the proposal.",
+                  "format": "uuid"
+            },
+            "contractId": {
+                  "type": "string",
+                  "description": "Identifier for the associated contract.",
+                  "format": "uuid"
+            },
+            "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Timestamp of when the proposal was created."
+            },
+            "version": {
+                  "type": "integer",
+                  "description": "Version number of the proposal."
+            },
+            "status": {
+                  "type": "string",
+                  "enum": [
+                        "draft",
+                        "presented",
+                        "accepted",
+                        "rejected"
+                  ],
+                  "description": "The current status of the proposal."
+            },
+            "technicalAnalysis": {
+                  "type": "object",
+                  "properties": {
+                        "pvSystem": {
+                              "type": "object",
+                              "properties": {
+                                    "systemCapacityKw": {
+                                          "type": "number"
+                                    },
+                                    "moduleType": {
+                                          "type": "string"
+                                    },
+                                    "inverterType": {
+                                          "type": "string"
+                                    },
+                                    "mountType": {
+                                          "type": "string"
+                                    },
+                                    "estimatedAnnualProductionKwh": {
+                                          "type": "number"
+                                    }
+                              }
+                        },
+                        "irradianceData": {
+                              "type": "object"
+                        }
+                  }
+            },
+            "economicAnalysis": {
+                  "type": "object",
+                  "properties": {
+                        "capex": {
+                              "type": "number"
+                        },
+                        "opex": {
+                              "type": "number"
+                        },
+                        "roi_pct": {
+                              "type": "number"
+                        },
+                        "payback_years": {
+                              "type": "number"
+                        },
+                        "tir_pct": {
+                              "type": "number"
+                        },
+                        "cashflow": {
+                              "type": "array",
+                              "items": {
+                                    "type": "number"
+                              }
+                        }
+                  }
+            },
+            "recommendations": {
+                  "type": "array",
+                  "items": {
+                        "type": "object",
+                        "properties": {
+                              "recommendationId": {
+                                    "type": "string"
+                              },
+                              "description": {
+                                    "type": "string"
+                              },
+                              "details": {
+                                    "type": "object"
+                              }
+                        }
+                  }
+            }
+      },
+      "required": [
+            "proposalId",
+            "contractId",
+            "createdAt",
+            "version",
+            "status",
+            "technicalAnalysis",
+            "economicAnalysis"
+      ]
+}
