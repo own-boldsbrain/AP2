@@ -100,9 +100,9 @@
             "tags": ["otp", "challenge", "verification"]
         },
         {
-            "id": "calculate_solar_position",
-            "name": "Calculate Solar Position",
-            "description": "Calculates the solar zenith and azimuth angles for a given location and date.",
+            "id": "solar_viability_check",
+            "name": "Solar Viability Check",
+            "description": "Delegates to the solar viability agent to check solar viability.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -121,7 +121,11 @@
                 },
                 "required": ["latitude", "longitude", "date"]
             },
-            "tags": ["solar", "position", "calculation"]
+            "tags": [
+                "solar",
+                "viability",
+                "check"
+            ]
         }
     ],
     "defaultInputModes": [

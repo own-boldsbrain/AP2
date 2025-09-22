@@ -309,24 +309,3 @@ def _parse_cart_mandates(artifacts: list[Artifact]) -> list[CartMandate]:
   return artifact_utils.find_canonical_objects(
       artifacts, CART_MANDATE_DATA_KEY, CartMandate
   )
-
-
-async def calculate_solar_position(
-    latitude: float, longitude: float, date: str, tool_context: ToolContext
-) -> str:
-    """Calculates the solar position for a given location and date.
-
-    Args:
-        latitude: Latitude of the location.
-        longitude: Longitude of the location.
-        date: Date in ISO format (e.g., '2023-01-01T12:00:00').
-        tool_context: The ADK supplied tool context.
-
-    Returns:
-        A string with the solar zenith and azimuth angles.
-    """
-    dt = pd.to_datetime(date)
-    solpos = pvlib.solarposition.get_solarposition(dt, latitude, longitude)
-    zenith = solpos['zenith'].iloc[0]
-    azimuth = solpos['azimuth'].iloc[0]
-    return f"Solar zenith: {zenith:.2f} degrees, Azimuth: {azimuth:.2f} degrees"
