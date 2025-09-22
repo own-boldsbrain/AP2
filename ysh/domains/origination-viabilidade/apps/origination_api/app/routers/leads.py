@@ -6,15 +6,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import SessionLocal
 from app.events.nats_bus import SUBJECTS, publish
-from app.models.leads import Lead, LeadFeatures, Recommendation
+from app.models.leads import Lead, LeadFeatures, LeadGeoKPIs, Recommendation
 from app.schemas.leads import (
     ClassifyIn,
+    GeoFeature,
+    GeoFeatureCollection,
+    GeoKPIIn,
+    GeoKPIOut,
     LeadCreate,
     LeadOut,
     ModalityIn,
     RecommendationOut,
     SizingIn,
     SizingOut,
+)
+from app.services.geo_enrichment import build_geo_key, build_geojson_feature
+from app.services.geo_store import (
+    find_features_by_coordinates,
+    get_feature_by_key,
+    load_feature_collection,
+    upsert_feature as upsert_geo_feature,
 )
 from app.services.recommendations import PROJECT_BANDS, TIERS, build_bundle
 from app.services.sizing import choose_band, sizing_summary
@@ -91,6 +102,107 @@ async def classify_lead(
         },
     )
     return {"ok": True}
+
+
+@router.post(
+    "/leads/{lead_id}/geo-kpis",
+    response_model=GeoKPIOut,
+    summary="Registrar dados GeoJSON enriquecidos com KPIs regulatórios",
+)
+async def upsert_geo_kpis(
+    lead_id: str,
+    body: GeoKPIIn,
+    db: AsyncSession = Depends(get_db),
+):
+    lead = await db.get(Lead, lead_id)
+    if not lead:
+        raise HTTPException(404, "lead not found")
+
+    composite_key = build_geo_key(body.cpf, body.cep, body.latitude, body.longitude)
+    properties = dict(body.properties)
+    properties.setdefault("lead_id", lead_id)
+    feature = build_geojson_feature(
+        cpf=body.cpf,
+        cep=body.cep,
+        latitude=body.latitude,
+        longitude=body.longitude,
+        kpis=body.kpis.model_dump(),
+        properties=properties,
+    )
+
+    feature = upsert_geo_feature(feature=feature, lead_id=lead_id)
+
+    existing = await db.get(LeadGeoKPIs, composite_key)
+    if existing and existing.lead_id != lead_id:
+        raise HTTPException(409, "geo KPIs belong to another lead")
+    if existing:
+        target = existing
+    else:
+        target = LeadGeoKPIs(composite_key=composite_key, lead_id=lead_id)
+        db.add(target)
+
+    props = feature["properties"]
+    target.lead_id = lead_id
+    target.cpf = props.get("cpf", "")
+    target.cep = props.get("cep", "")
+    target.latitude = feature["geometry"]["coordinates"][1]
+    target.longitude = feature["geometry"]["coordinates"][0]
+    target.properties = props
+    target.kpis = props.get("kpis", {})
+    target.geojson = feature
+
+    await db.commit()
+    await db.refresh(target)
+    return GeoKPIOut.model_validate(target)
+
+
+@router.get(
+    "/leads/{lead_id}/geo-kpis",
+    response_model=GeoKPIOut,
+    summary="Consultar KPIs geoespaciais do lead",
+)
+async def get_geo_kpis(lead_id: str, db: AsyncSession = Depends(get_db)):
+    record = (
+        await db.execute(
+            select(LeadGeoKPIs).where(LeadGeoKPIs.lead_id == lead_id)
+        )
+    ).scalar_one_or_none()
+    if not record:
+        raise HTTPException(404, "geo KPIs not found")
+    return GeoKPIOut.model_validate(record)
+
+
+@router.get(
+    "/geo-kpis/features",
+    response_model=GeoFeatureCollection,
+    summary="Listar GeoJSON persistidos para leads enriquecidos",
+)
+async def list_geo_features() -> GeoFeatureCollection:
+    return GeoFeatureCollection.model_validate(load_feature_collection())
+
+
+@router.get(
+    "/geo-kpis/features/{composite_key}",
+    response_model=GeoFeature,
+    summary="Consultar feature GeoJSON por chave composta",
+)
+async def get_geo_feature(composite_key: str) -> GeoFeature:
+    feature = get_feature_by_key(composite_key)
+    if not feature:
+        raise HTTPException(404, "geo feature not found")
+    return GeoFeature.model_validate(feature)
+
+
+@router.get(
+    "/geo-kpis/features/by-location",
+    response_model=GeoFeatureCollection,
+    summary="Filtrar features GeoJSON por coordenadas normalizadas",
+)
+async def get_geo_features_by_location(
+    latitude: float, longitude: float
+) -> GeoFeatureCollection:
+    features = find_features_by_coordinates(latitude=latitude, longitude=longitude)
+    return GeoFeatureCollection(features=[GeoFeature.model_validate(f) for f in features])
 
 
 @router.post(
