@@ -1,0 +1,28 @@
+{
+  "name": "geo-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:https": "next dev --experimental-https",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "3d-tiles-renderer": "^0.4.7",
+    "next": "^15.0.0-canary.118",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.168.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.0-canary.118",
+    "typescript": "^5.5.4"
+  },
+  "packageManager": "pnpm@9.7.1"
+}
