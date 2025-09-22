@@ -32,7 +32,7 @@ tasks:
       kestra = Kestra()
       solar_results = kestra.get_task_run("run_solar_analysis").outputs["body"]
       aneel_results = kestra.get_task_run("run_aneel_analysis").outputs["body"]
-      
+
       # Lógica para consolidar e publicar o resultado final
       print(f"Solar Analysis: {solar_results}")
       print(f"ANEEL Analysis: {aneel_results}")

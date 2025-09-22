@@ -1,6 +1,8 @@
 import asyncio
+
 import nats
-from nats.errors import ConnectionClosedError, TimeoutError, NoServersError
+from nats.errors import ConnectionClosedError, NoServersError, TimeoutError
+
 
 class NatsBus:
     def __init__(self, server_url="nats://localhost:4222"):
@@ -61,6 +63,9 @@ async def main():
     await asyncio.sleep(10)
 
     await bus.disconnect()
+
+if __name__ == '__main__':
+    asyncio.run(main())
 
 if __name__ == '__main__':
     asyncio.run(main())
