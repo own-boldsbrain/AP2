@@ -1,0 +1,72 @@
+{
+      "name": "AneelUtilitiesAgent",
+      "description": "An agent for ANEEL utilities and general electricity-related functions.",
+      "capabilities": {
+            "extensions": [
+                  {
+                        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                        "description": "Supports the Agent Payments Protocol.",
+                        "required": true
+                  }
+            ]
+      },
+      "skills": [
+            {
+                  "id": "get_utility_info",
+                  "name": "Get Utility Info",
+                  "description": "Retrieves information about electricity utilities from ANEEL.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "utility_id": {
+                                    "type": "string",
+                                    "description": "The ID of the utility."
+                              }
+                        },
+                        "required": [
+                              "utility_id"
+                        ]
+                  },
+                  "tags": [
+                        "aneel",
+                        "utilities",
+                        "info"
+                  ]
+            },
+            {
+                  "id": "calculate_utility_cost",
+                  "name": "Calculate Utility Cost",
+                  "description": "Calculates the total cost including utilities and other fees.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "base_cost": {
+                                    "type": "number",
+                                    "description": "Base cost of electricity."
+                              },
+                              "additional_fees": {
+                                    "type": "number",
+                                    "description": "Additional fees."
+                              }
+                        },
+                        "required": [
+                              "base_cost",
+                              "additional_fees"
+                        ]
+                  },
+                  "tags": [
+                        "aneel",
+                        "utilities",
+                        "cost"
+                  ]
+            }
+      ],
+      "defaultInputModes": [
+            "text/plain"
+      ],
+      "defaultOutputModes": [
+            "application/json"
+      ],
+      "url": "http://localhost:8006/mcp/aneel_utilities",
+      "version": "1.0.0"
+}

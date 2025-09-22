@@ -1,0 +1,88 @@
+{
+      "name": "SolarViabilityAgent",
+      "description": "An agent for calculating solar energy viability using pvlib and NASA data.",
+      "capabilities": {
+            "extensions": [
+                  {
+                        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                        "description": "Supports the Agent Payments Protocol.",
+                        "required": true
+                  }
+            ]
+      },
+      "skills": [
+            {
+                  "id": "calculate_solar_viability",
+                  "name": "Calculate Solar Viability",
+                  "description": "Calculates the viability of a solar installation based on location, energy needs, and economic factors.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "latitude": {
+                                    "type": "number",
+                                    "description": "Latitude of the location."
+                              },
+                              "longitude": {
+                                    "type": "number",
+                                    "description": "Longitude of the location."
+                              },
+                              "energy_consumption": {
+                                    "type": "number",
+                                    "description": "Annual energy consumption in kWh."
+                              },
+                              "roof_area": {
+                                    "type": "number",
+                                    "description": "Available roof area in square meters."
+                              }
+                        },
+                        "required": [
+                              "latitude",
+                              "longitude",
+                              "energy_consumption",
+                              "roof_area"
+                        ]
+                  },
+                  "tags": [
+                        "solar",
+                        "viability",
+                        "pvlib",
+                        "nasa"
+                  ]
+            },
+            {
+                  "id": "get_solar_irradiance_data",
+                  "name": "Get Solar Irradiance Data",
+                  "description": "Retrieves solar irradiance data from NASA for a given location.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "latitude": {
+                                    "type": "number",
+                                    "description": "Latitude of the location."
+                              },
+                              "longitude": {
+                                    "type": "number",
+                                    "description": "Longitude of the location."
+                              }
+                        },
+                        "required": [
+                              "latitude",
+                              "longitude"
+                        ]
+                  },
+                  "tags": [
+                        "solar",
+                        "irradiance",
+                        "nasa"
+                  ]
+            }
+      ],
+      "defaultInputModes": [
+            "text/plain"
+      ],
+      "defaultOutputModes": [
+            "application/json"
+      ],
+      "url": "http://localhost:8003/mcp/solar_viability",
+      "version": "1.0.0"
+}

@@ -1,0 +1,77 @@
+{
+      "name": "AneelTariffsAgent",
+      "description": "An agent for retrieving and calculating ANEEL electricity tariffs.",
+      "capabilities": {
+            "extensions": [
+                  {
+                        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                        "description": "Supports the Agent Payments Protocol.",
+                        "required": true
+                  }
+            ]
+      },
+      "skills": [
+            {
+                  "id": "get_tariff_rates",
+                  "name": "Get Tariff Rates",
+                  "description": "Retrieves current electricity tariff rates from ANEEL for a given region and modality.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "region": {
+                                    "type": "string",
+                                    "description": "The region or distributor code."
+                              },
+                              "modality": {
+                                    "type": "string",
+                                    "description": "The tariff modality (e.g., residential, commercial)."
+                              }
+                        },
+                        "required": [
+                              "region",
+                              "modality"
+                        ]
+                  },
+                  "tags": [
+                        "aneel",
+                        "tariffs",
+                        "electricity"
+                  ]
+            },
+            {
+                  "id": "calculate_tariff_cost",
+                  "name": "Calculate Tariff Cost",
+                  "description": "Calculates the cost of electricity based on consumption and tariff rates.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "consumption": {
+                                    "type": "number",
+                                    "description": "Energy consumption in kWh."
+                              },
+                              "tariff_rate": {
+                                    "type": "number",
+                                    "description": "Tariff rate per kWh."
+                              }
+                        },
+                        "required": [
+                              "consumption",
+                              "tariff_rate"
+                        ]
+                  },
+                  "tags": [
+                        "aneel",
+                        "tariffs",
+                        "cost"
+                  ]
+            }
+      ],
+      "defaultInputModes": [
+            "text/plain"
+      ],
+      "defaultOutputModes": [
+            "application/json"
+      ],
+      "url": "http://localhost:8004/mcp/aneel_tariffs",
+      "version": "1.0.0"
+}
