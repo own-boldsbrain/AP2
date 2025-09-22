@@ -1,0 +1,5 @@
+[
+  { "id": "webhook-in", "type": "http in", "url": "/hooks/leads", "method": "post" },
+  { "id": "validate-consent", "type": "function", "name": "Consent/LGPD check" },
+  { "id": "emit-nats", "type": "nats out", "topic": "ysh.origination.lead.captured.v1" }
+]

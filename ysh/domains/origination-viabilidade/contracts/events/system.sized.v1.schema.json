@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ysh.origination.system.sized.v1",
+  "type": "object",
+  "required": ["lead_id","ts","kwp","kwh_year","pr","losses"],
+  "properties": {
+    "lead_id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "kwp": { "type": "number" },
+    "kwh_year": { "type": "number" },
+    "pr": { "type": "number" },
+    "losses": { "type": "number" }
+  }
+}

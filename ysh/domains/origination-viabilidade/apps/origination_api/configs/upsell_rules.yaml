@@ -1,0 +1,6 @@
+rules:
+  - { when: { band_in: [XS,S], load_profile: R-N }, suggest: [BATERIA_LIGHT,INSURANCE_BASIC,O&M_BASIC] }
+  - { when: { band_in: [M,L],  load_profile: R-N }, suggest: [BATERIA_STD,DSM_TOU,INSURANCE_STD,O&M_STD] }
+  - { when: { band_in: [XL,XG,XGG] },            suggest: [O&M_PRO,INSURANCE_PREMIUM,MONITORING_ADVANCED] }
+  - { when: { generation_modality: COMPARTILHADA }, suggest: [RATEIO_AUTOMATION,DASHBOARD_PARTICIPANTES,O&M_SHARE_PLAN] }
+  - { when: { uc_type: COND_MUC },                 suggest: [RATEIO_MUC,MEDICAO_AGREGADA,GARANTIA_EXTENDIDA] }

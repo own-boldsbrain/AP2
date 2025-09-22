@@ -1,0 +1,7 @@
+segments:
+  - key: B1_RN_AUTO_LOCAL
+    filter: { consumer_class: "B1", load_profile: "R-N", generation_modality: "AUTO_LOCAL" }
+    kpis: [ "sql_to_proposal", "ticket_medio", "upsell_bateria_rate" ]
+  - key: B3_CD_AUTO_REMOTO
+    filter: { consumer_class: "B3", load_profile: "C-D", generation_modality: "AUTO_REMOTO" }
+    kpis: [ "tempo_proposta", "gmv", "ev_attach_rate" ]

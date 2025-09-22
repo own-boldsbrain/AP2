@@ -1,0 +1,14 @@
+id: ysh.orig.profile_enrichment
+namespace: ysh.origination
+tasks:
+  - id: fetch_consumption_12m
+    type: io.kestra.plugin.core.http.Http
+    uri: "{{ inputs.uc_endpoint }}/consumption/last-12m?uc={{ inputs.uc_code }}"
+    headers: { Authorization: "Bearer {{ secrets.utility_token }}" }
+  - id: nasa_power_hsp
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      print('{"hsp": 5.3}')
+  - id: detect_profile
+    type: io.kestra.plugin.core.log.Log
+    message: "Perfil=C-D | emitir consumption.profile.detected.v1"

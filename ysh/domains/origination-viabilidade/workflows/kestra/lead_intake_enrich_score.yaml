@@ -1,0 +1,18 @@
+id: ysh.orig.lead_intake_enrich_score
+namespace: ysh.origination
+tasks:
+  - id: receive_webhook
+    type: io.kestra.plugin.core.trigger.Webhook
+    endpoint: /hooks/leads
+  - id: enrich
+    type: io.kestra.plugin.scripts.python.Script
+    script: enrichment.py
+  - id: score
+    type: io.kestra.plugin.scripts.python.Script
+    script: scoring.py
+  - id: size
+    type: io.kestra.plugin.scripts.python.Script
+    script: sizing.py
+  - id: emit_events
+    type: io.kestra.plugin.core.log.Log
+    message: "Emit lead.scored.v1 & system.sized.v1"
