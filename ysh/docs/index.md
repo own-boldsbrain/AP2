@@ -52,6 +52,9 @@ hide:
     [:octicons-arrow-right-24: AP2, A2A e MCP](topics/ap2-a2a-and-mcp.md)<br>
     [:octicons-arrow-right-24: AP2 e x402](topics/ap2-and-x402.md)<br>
     [:octicons-arrow-right-24: Privacidade e Segurança](topics/privacy-and-security.md)<br>
+    [:octicons-arrow-right-24: Sumário Executivo](executive-summary.md)<br>
+    [:octicons-arrow-right-24: Índice de URLs](reference-urls.md)<br>
+    [:octicons-arrow-right-24: Biblioteca de Hashtags](hashtags-library.md)<br>
 
 </div>
 
