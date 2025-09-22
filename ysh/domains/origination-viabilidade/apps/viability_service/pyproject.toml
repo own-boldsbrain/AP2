@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "viability_service"
+version = "0.1.0"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pvlib",
+    "pandas",
+    "requests",
+    "nats-py",
+]
