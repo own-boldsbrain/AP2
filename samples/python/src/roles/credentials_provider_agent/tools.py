@@ -51,7 +51,12 @@ async def handle_get_shipping_address(
   user_email = message_utils.find_data_part("user_email", data_parts)
   if not user_email:
     raise ValueError("user_email is required for get_shipping_address")
+    
   shipping_address = account_manager.get_account_shipping_address(user_email)
+  if not shipping_address:
+    await updater.failed(message="Shipping address not found for the user.")
+    return
+    
   await updater.add_artifact(
       [Part(root=DataPart(data={CONTACT_ADDRESS_DATA_KEY: shipping_address}))]
   )
@@ -83,11 +88,11 @@ async def handle_search_payment_methods(
       PAYMENT_METHOD_DATA_DATA_KEY, data_parts
   )
   if not user_email:
-    raise ValueError(
-        "user_email is required for search_payment_methods"
-    )
+    await updater.failed(message="user_email is required for search_payment_methods")
+    return
   if not method_data:
-    raise ValueError("method_data is required for search_payment_methods")
+    await updater.failed(message="method_data is required for search_payment_methods")
+    return
 
   merchant_method_data_list = [
       PaymentMethodData.model_validate(data) for data in method_data
@@ -95,7 +100,17 @@ async def handle_search_payment_methods(
   eligible_aliases = _get_eligible_payment_method_aliases(
       user_email, merchant_method_data_list
   )
-  await updater.add_artifact([Part(root=DataPart(data=eligible_aliases))])
+  
+  if not eligible_aliases.get("payment_method_aliases") or len(eligible_aliases.get("payment_method_aliases", [])) == 0:
+    await updater.add_artifact([
+        Part(root=DataPart(data={
+            "status": "no_payment_methods_found",
+            "message": "No matching payment methods found for this merchant."
+        }))
+    ])
+  else:
+    await updater.add_artifact([Part(root=DataPart(data=eligible_aliases))])
+  
   await updater.complete()
 
 
@@ -113,21 +128,38 @@ async def handle_get_payment_method_raw_credentials(
     updater: The TaskUpdater instance for updating the task state.
     current_task: The current task if there is one.
   """
-
-  payment_mandate_contents = message_utils.parse_canonical_object(
-      PAYMENT_MANDATE_DATA_KEY, data_parts, PaymentMandate
-  ).payment_mandate_contents
-
-  token = payment_mandate_contents.payment_response.details.get(
-      "token", {}
-  ).get("value", "")
-  payment_mandate_id = payment_mandate_contents.payment_mandate_id
-
-  payment_method = account_manager.verify_token(token, payment_mandate_id)
-  if not payment_method:
-    raise ValueError(f"Payment method not found for token: {token}")
-  await updater.add_artifact([Part(root=DataPart(data=payment_method))])
-  await updater.complete()
+  try:
+    payment_mandate = message_utils.parse_canonical_object(
+        PAYMENT_MANDATE_DATA_KEY, data_parts, PaymentMandate
+    )
+    if not payment_mandate:
+      await updater.failed(message="Missing payment mandate data")
+      return
+    
+    payment_mandate_contents = payment_mandate.payment_mandate_contents
+    
+    # Extract token value from payment response details
+    token = payment_mandate_contents.payment_response.details.get(
+        "token", {}
+    ).get("value", "")
+    if not token:
+      await updater.failed(message="Token not found in payment mandate")
+      return
+      
+    payment_mandate_id = payment_mandate_contents.payment_mandate_id
+    
+    # Verify token and get payment method details
+    payment_method = account_manager.verify_token(token, payment_mandate_id)
+    if not payment_method:
+      await updater.failed(message=f"Payment method not found for token: {token}")
+      return
+      
+    # Add credentials to the response artifact
+    await updater.add_artifact([Part(root=DataPart(data=payment_method))])
+    await updater.complete()
+  except Exception as e:
+    await updater.failed(message=f"Error processing payment credentials: {str(e)}")
+    return
 
 
 async def handle_create_payment_credential_token(
@@ -145,24 +177,50 @@ async def handle_create_payment_credential_token(
     updater: The TaskUpdater instance for updating the task state.
     current_task: The current task if there is one.
   """
-  user_email = message_utils.find_data_part("user_email", data_parts)
-  payment_method_alias = message_utils.find_data_part(
-      "payment_method_alias", data_parts
-  )
-  if not user_email or not payment_method_alias:
-    raise ValueError(
-        "user_email and payment_method_alias are required for"
-        " create_payment_credential_token"
+  try:
+    # Extract required data
+    user_email = message_utils.find_data_part("user_email", data_parts)
+    payment_method_alias = message_utils.find_data_part(
+        "payment_method_alias", data_parts
     )
-
-  tokenized_payment_method = account_manager.create_token(
-      user_email, payment_method_alias
-  )
-
-  await updater.add_artifact(
-      [Part(root=DataPart(data={"token": tokenized_payment_method}))]
-  )
-  await updater.complete()
+    
+    # Validate input data
+    if not user_email:
+      await updater.failed(message="user_email is required for create_payment_credential_token")
+      return
+    if not payment_method_alias:
+      await updater.failed(message="payment_method_alias is required for create_payment_credential_token")
+      return
+    
+    # Verify the payment method exists for this user
+    payment_method = account_manager.get_payment_method_by_alias(
+        user_email, payment_method_alias
+    )
+    if not payment_method:
+      await updater.failed(message=f"Payment method '{payment_method_alias}' not found for user '{user_email}'")
+      return
+    
+    # Create the token
+    tokenized_payment_method = account_manager.create_token(
+        user_email, payment_method_alias
+    )
+    
+    # Include the credentials provider URL in the response
+    # In a real implementation, this would be a proper URL to the credentials provider service
+    credentials_provider_url = "http://localhost:8004/a2a/credentials_provider_agent"
+    
+    await updater.add_artifact([
+        Part(root=DataPart(data={
+            "token": {
+                "value": tokenized_payment_method,
+                "url": credentials_provider_url
+            }
+        }))
+    ])
+    await updater.complete()
+  except Exception as e:
+    await updater.failed(message=f"Error creating payment credential token: {str(e)}")
+    return
 
 
 async def handle_signed_payment_mandate(
@@ -173,24 +231,61 @@ async def handle_signed_payment_mandate(
   """Handles a signed payment mandate.
 
   Adds the payment mandate id to the token in storage and then completes the
-  task.
+  task. This associates the payment mandate with the token for future validation.
 
   Args:
     data_parts: DataPart contents. Should contain a single PaymentMandate.
     updater: The TaskUpdater instance for updating the task state.
     current_task: The current task if there is one.
   """
-  payment_mandate = message_utils.parse_canonical_object(
-      PAYMENT_MANDATE_DATA_KEY, data_parts, PaymentMandate
-  )
-  token = payment_mandate.payment_mandate_contents.payment_response.details.get(
-      "token", {}
-  ).get("value", "")
-  payment_mandate_id = (
-      payment_mandate.payment_mandate_contents.payment_mandate_id
-  )
-  account_manager.update_token(token, payment_mandate_id)
-  await updater.complete()
+  try:
+    # Parse and validate the payment mandate
+    payment_mandate = message_utils.parse_canonical_object(
+        PAYMENT_MANDATE_DATA_KEY, data_parts, PaymentMandate
+    )
+    if not payment_mandate:
+      await updater.failed(message="Missing payment mandate data")
+      return
+    
+    # Extract token and mandate ID
+    token = payment_mandate.payment_mandate_contents.payment_response.details.get(
+        "token", {}
+    ).get("value", "")
+    if not token:
+      await updater.failed(message="Token not found in payment mandate")
+      return
+    
+    payment_mandate_id = (
+        payment_mandate.payment_mandate_contents.payment_mandate_id
+    )
+    if not payment_mandate_id:
+      await updater.failed(message="Payment mandate ID not found")
+      return
+    
+    # Validate user authorization if present
+    if payment_mandate.user_authorization:
+      # In a real implementation, would verify the signature here
+      # For the demo, we'll just validate that it exists
+      pass
+    
+    # Update the token with the payment mandate ID
+    try:
+      account_manager.update_token(token, payment_mandate_id)
+    except ValueError as e:
+      await updater.failed(message=f"Failed to update token: {str(e)}")
+      return
+    
+    # Return success
+    await updater.add_artifact([
+        Part(root=DataPart(data={
+            "status": "success",
+            "payment_mandate_id": payment_mandate_id
+        }))
+    ])
+    await updater.complete()
+  except Exception as e:
+    await updater.failed(message=f"Error handling signed payment mandate: {str(e)}")
+    return
 
 
 def _get_payment_method_aliases(
