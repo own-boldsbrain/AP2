@@ -16,8 +16,8 @@ from app.schemas.leads import (
     SizingIn,
     SizingOut,
 )
-from app.services.recommendations import TIERS, build_bundle
-from app.services.sizing import sizing_summary
+from app.services.recommendations import PROJECT_BANDS, TIERS, build_bundle
+from app.services.sizing import choose_band, sizing_summary
 
 router = APIRouter()
 
@@ -153,6 +153,7 @@ async def size_lead(
         "load_profile": features.load_profile,
     }
     summary = sizing_summary(feature_payload, tier["factor"])
+    band_code, _ = choose_band(summary["kwp"], PROJECT_BANDS)
     now = datetime.now(timezone.utc).isoformat()
     await publish(
         SUBJECTS["sized"],
@@ -167,6 +168,7 @@ async def size_lead(
     )
     return {
         "lead_id": lead_id,
+        "band_code": band_code,
         "kwp": summary["kwp"],
         "expected_kwh_year": summary["expected_kwh_year"],
         "pr": summary["pr"],

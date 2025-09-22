@@ -1,15 +1,18 @@
 import uuid
 from collections.abc import Iterable
+from pathlib import Path
 
 import yaml
 
 from app.services.sizing import choose_band, sizing_summary
 
-with open("configs/project_size_bands.yaml", "r", encoding="utf-8") as fp:
+CONFIG_DIR = Path(__file__).resolve().parents[2] / "configs"
+
+with open(CONFIG_DIR / "project_size_bands.yaml", "r", encoding="utf-8") as fp:
     PROJECT_BANDS = yaml.safe_load(fp)["bands"]
-with open("configs/recommendation_tiers.yaml", "r", encoding="utf-8") as fp:
+with open(CONFIG_DIR / "recommendation_tiers.yaml", "r", encoding="utf-8") as fp:
     TIERS = {tier["code"]: tier for tier in yaml.safe_load(fp)["tiers"]}
-with open("configs/upsell_rules.yaml", "r", encoding="utf-8") as fp:
+with open(CONFIG_DIR / "upsell_rules.yaml", "r", encoding="utf-8") as fp:
     UPSELL = yaml.safe_load(fp)["rules"]
 
 
