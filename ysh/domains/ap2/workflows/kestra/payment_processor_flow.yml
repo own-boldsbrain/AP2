@@ -1,0 +1,122 @@
+id: ysh.ap2.payment_processor
+namespace: ysh.ap2
+description: >-
+  Automatiza a execução das skills MCP do MerchantPaymentProcessorAgent para
+  validar mandato, aplicar desafio OTP e concluir a liquidação de pagamentos AP2.
+inputs:
+  - name: transaction_id
+    type: STRING
+    required: true
+    description: Identificador único da transação em processamento.
+  - name: cart_mandate_json
+    type: STRING
+    required: true
+    description: Mandato de carrinho recebido do MerchantAgent.
+  - name: payment_mandate_json
+    type: STRING
+    required: true
+    description: Mandato de pagamento assinado pelo CredentialsProviderAgent.
+  - name: payment_method_json
+    type: STRING
+    required: true
+    description: Método de pagamento tokenizado que deve ser roteado ao processador.
+  - name: challenge_type
+    type: STRING
+    required: true
+    description: Canal preferencial para autenticação (ex.: "sms" ou "email").
+  - name: challenge_response
+    type: STRING
+    required: true
+    description: Resposta capturada do usuário para o desafio solicitado.
+tasks:
+  - id: initiate_processor_payment
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-payment-processor:8003/mcp/merchant_payment_processor"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "transaction_id": "{{ inputs.transaction_id }}"
+        },
+        "skill": {
+          "id": "initiate_payment",
+          "parameters": {
+            "cart_mandate": {{ inputs.cart_mandate_json }},
+            "payment_mandate": {{ inputs.payment_mandate_json }},
+            "payment_method": {{ inputs.payment_method_json }}
+          }
+        }
+      }
+  - id: handle_mandate_validation
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-payment-processor:8003/mcp/merchant_payment_processor"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "transaction_id": "{{ inputs.transaction_id }}"
+        },
+        "skill": {
+          "id": "handle_payment_mandate",
+          "parameters": {
+            "payment_mandate": {{ inputs.payment_mandate_json }},
+            "cart_mandate": {{ inputs.cart_mandate_json }}
+          }
+        }
+      }
+  - id: raise_otp_challenge
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-payment-processor:8003/mcp/merchant_payment_processor"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "transaction_id": "{{ inputs.transaction_id }}"
+        },
+        "skill": {
+          "id": "raise_challenge",
+          "parameters": {
+            "transaction_id": "{{ inputs.transaction_id }}",
+            "challenge_type": "{{ inputs.challenge_type }}"
+          }
+        }
+      }
+  - id: verify_otp_response
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-payment-processor:8003/mcp/merchant_payment_processor"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "transaction_id": "{{ inputs.transaction_id }}"
+        },
+        "skill": {
+          "id": "verify_challenge_response",
+          "parameters": {
+            "transaction_id": "{{ inputs.transaction_id }}",
+            "challenge_response": "{{ inputs.challenge_response }}"
+          }
+        }
+      }
+  - id: complete_payment
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-payment-processor:8003/mcp/merchant_payment_processor"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "transaction_id": "{{ inputs.transaction_id }}"
+        },
+        "skill": {
+          "id": "complete_payment",
+          "parameters": {
+            "transaction_id": "{{ inputs.transaction_id }}",
+            "payment_mandate": {{ inputs.payment_mandate_json }}
+          }
+        }
+      }
