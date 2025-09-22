@@ -1,0 +1,139 @@
+id: ysh.ap2.merchant_checkout
+namespace: ysh.ap2
+description: >-
+  Orquestra o fluxo MCP do MerchantAgent desde a descoberta de produtos até a
+  iniciação do pagamento e finalização com credencial digital.
+inputs:
+  - name: shopping_agent_id
+    type: STRING
+    required: true
+    description: Identificador do agente comprador autorizado a interagir com o comerciante.
+  - name: intent_query
+    type: STRING
+    required: true
+    description: Descrição em linguagem natural do que o usuário deseja comprar.
+  - name: cart_id
+    type: STRING
+    required: true
+    description: Identificador do carrinho que será atualizado.
+  - name: cart_items_json
+    type: STRING
+    required: true
+    description: Lista de itens (JSON) que serão mantidos no carrinho após a curadoria.
+  - name: payment_options_json
+    type: STRING
+    required: true
+    description: Estrutura JSON com regras de pagamento e fulfillment para o mandato do carrinho.
+  - name: shipping_address_json
+    type: STRING
+    required: true
+    description: Endereço de entrega fornecido pelo CredentialsProviderAgent (JSON).
+  - name: payment_method_json
+    type: STRING
+    required: true
+    description: Método de pagamento tokenizado pronto para iniciar a transação.
+  - name: payment_mandate_json
+    type: STRING
+    required: true
+    description: Mandato de pagamento assinado pelo CredentialsProviderAgent.
+  - name: dpc_response_json
+    type: STRING
+    required: true
+    description: Resposta do provedor de credenciais digitais para concluir a compra.
+tasks:
+  - id: search_catalog
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-agent:8001/mcp/merchant_agent"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "shopping_agent_id": "{{ inputs.shopping_agent_id }}"
+        },
+        "skill": {
+          "id": "search_catalog",
+          "parameters": {
+            "query": "{{ inputs.intent_query }}",
+            "intent_mandate": {
+              "natural_language_description": "{{ inputs.intent_query }}"
+            }
+          }
+        }
+      }
+  - id: create_cart_mandate
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-agent:8001/mcp/merchant_agent"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "shopping_agent_id": "{{ inputs.shopping_agent_id }}"
+        },
+        "skill": {
+          "id": "create_cart_mandate",
+          "parameters": {
+            "cart_id": "{{ inputs.cart_id }}",
+            "payment_options": {{ inputs.payment_options_json }}
+          }
+        }
+      }
+  - id: update_cart_with_shipping
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-agent:8001/mcp/merchant_agent"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "shopping_agent_id": "{{ inputs.shopping_agent_id }}"
+        },
+        "skill": {
+          "id": "update_cart",
+          "parameters": {
+            "cart_id": "{{ inputs.cart_id }}",
+            "operation": "merge",
+            "items": {{ inputs.cart_items_json }},
+            "shipping_address": {{ inputs.shipping_address_json }},
+            "cart_mandate": {{ outputs.create_cart_mandate.body }}
+          }
+        }
+      }
+  - id: initiate_payment
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-agent:8001/mcp/merchant_agent"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "shopping_agent_id": "{{ inputs.shopping_agent_id }}"
+        },
+        "skill": {
+          "id": "initiate_payment",
+          "parameters": {
+            "cart_mandate": {{ outputs.create_cart_mandate.body }},
+            "payment_mandate": {{ inputs.payment_mandate_json }},
+            "payment_method": {{ inputs.payment_method_json }}
+          }
+        }
+      }
+  - id: finalize_with_dpc
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://merchant-agent:8001/mcp/merchant_agent"
+    contentType: application/json
+    body: |
+      {
+        "context": {
+          "shopping_agent_id": "{{ inputs.shopping_agent_id }}"
+        },
+        "skill": {
+          "id": "dpc_finish",
+          "parameters": {
+            "cart_mandate": {{ outputs.create_cart_mandate.body }},
+            "dpc_response": {{ inputs.dpc_response_json }}
+          }
+        }
+      }
