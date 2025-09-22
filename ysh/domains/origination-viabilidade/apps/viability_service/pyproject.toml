@@ -1,15 +1,12 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "viability_service"
+name = "ysh-viability-service"
 version = "0.1.0"
+requires-python = ">=3.11"
 dependencies = [
-    "fastapi",
-    "uvicorn",
-    "pvlib",
-    "pandas",
-    "requests",
-    "nats-py",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "pydantic>=2.7",
+  "numpy","pandas","requests",
+  "pvlib>=0.10.5",
+  "nats-py>=2.6"
 ]

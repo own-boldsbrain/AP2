@@ -1,44 +1,38 @@
-id: viability_and_economics
+id: ysh.orig.viability_and_economics
 namespace: ysh.origination
-description: Orquestra a análise de viabilidade solar e econômica.
-
+inputs:
+  - name: lead_id
+    type: STRING
+  - name: lat
+    type: DOUBLE
+  - name: lon
+    type: DOUBLE
+  - name: capex
+    type: DOUBLE
+  - name: opex
+    type: DOUBLE
 tasks:
-  - id: start_viability_check
-    type: io.kestra.core.tasks.flows.Trigger
-    triggerId: on_viability_check_requested
-
-  - id: run_solar_analysis
-    type: io.kestra.plugin.fs.http.Request
-    uri: http://viability-service/analyze/solar
+  - id: call_viability
+    type: io.kestra.plugin.core.http.Http
     method: POST
-    body: "{{ trigger.data | json }}"
-    retry:
-      maxAttempt: 3
-      delay: PT10S
-
-  - id: run_aneel_analysis
-    type: io.kestra.plugin.fs.http.Request
-    uri: http://viability-service/analyze/aneel
+    uri: "http://viability_service:8010/tools/viability.compute"
+    contentType: application/json
+    body: |
+      {"lat": {{ inputs.lat }}, "lon": {{ inputs.lon }}}
+  - id: call_tariffs
+    type: io.kestra.plugin.core.http.Http
     method: POST
-    body: "{{ trigger.data | json }}"
-    retry:
-      maxAttempt: 3
-      delay: PT10S
-
-  - id: consolidate_results
-    type: io.kestra.core.tasks.scripts.Python
-    script: |
-      from kestra import Kestra
-      kestra = Kestra()
-      solar_results = kestra.get_task_run("run_solar_analysis").outputs["body"]
-      aneel_results = kestra.get_task_run("run_aneel_analysis").outputs["body"]
-
-      # Lógica para consolidar e publicar o resultado final
-      print(f"Solar Analysis: {solar_results}")
-      print(f"ANEEL Analysis: {aneel_results}")
-
-triggers:
-  - id: on_viability_check_requested
-    type: io.kestra.plugin.nats.Trigger
-    subject: "viability.check.requested"
-    server: "{{ secret('NATS_SERVER') }}"
+    uri: "http://aneel_tariffs:8011/tools/aneel.tariffs.profile.build"
+    contentType: application/json
+    body: |
+      {"rows": []}
+  - id: call_economics
+    type: io.kestra.plugin.core.http.Http
+    method: POST
+    uri: "http://viability_service:8010/tools/economics.evaluate"
+    contentType: application/json
+    body: |
+      {"kwh_year": {{ outputs.call_viability.body.kwh_year }}, "tariff_profile": {"cents_per_kwh": 120}, "capex": {{ inputs.capex }}, "opex": {{ inputs.opex }}}
+  - id: emit_completed
+    type: io.kestra.plugin.core.log.Log
+    message: "Emit viability.completed.v1 com resultados"

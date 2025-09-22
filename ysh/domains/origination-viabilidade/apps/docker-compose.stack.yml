@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  origination_api:
+    build: ./origination_api
+    env_file: ./origination_api/.env.example
+    ports: ["8000:8000"]
+    depends_on: [postgres, nats]
+
+  viability_service:
+    build: ./viability_service
+    env_file: ./viability_service/.env.example
+    ports: ["8010:8010"]
+    depends_on: [nats]
+
+  aneel_tariffs:
+    build: ./aneel_tariffs
+    env_file: ./aneel_tariffs/.env.example
+    ports: ["8011:8011"]
+    depends_on: [nats]
+
+  aneel_kpis:
+    build: ./aneel_kpis
+    env_file: ./aneel_kpis/.env.example
+    ports: ["8012:8012"]
+    depends_on: [nats]
+
+  aneel_utilities:
+    build: ./aneel_utilities
+    env_file: ./aneel_utilities/.env.example
+    ports: ["8013:8013"]
+    depends_on: [nats]
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ysh
+      POSTGRES_USER: ysh
+      POSTGRES_PASSWORD: secret
+    ports: ["5432:5432"]
+
+  nats:
+    image: nats:2.10
+    command: ["-js","-sd","/data"]
+    ports: ["4222:4222","8222:8222"]

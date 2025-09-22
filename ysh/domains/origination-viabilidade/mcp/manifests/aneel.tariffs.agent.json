@@ -1,77 +1,26 @@
 {
-      "name": "AneelTariffsAgent",
-      "description": "An agent for retrieving and calculating ANEEL electricity tariffs.",
-      "capabilities": {
-            "extensions": [
-                  {
-                        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
-                        "description": "Supports the Agent Payments Protocol.",
-                        "required": true
-                  }
-            ]
-      },
-      "skills": [
-            {
-                  "id": "get_tariff_rates",
-                  "name": "Get Tariff Rates",
-                  "description": "Retrieves current electricity tariff rates from ANEEL for a given region and modality.",
-                  "parameters": {
-                        "type": "object",
-                        "properties": {
-                              "region": {
-                                    "type": "string",
-                                    "description": "The region or distributor code."
-                              },
-                              "modality": {
-                                    "type": "string",
-                                    "description": "The tariff modality (e.g., residential, commercial)."
-                              }
-                        },
-                        "required": [
-                              "region",
-                              "modality"
-                        ]
-                  },
-                  "tags": [
-                        "aneel",
-                        "tariffs",
-                        "electricity"
-                  ]
-            },
-            {
-                  "id": "calculate_tariff_cost",
-                  "name": "Calculate Tariff Cost",
-                  "description": "Calculates the cost of electricity based on consumption and tariff rates.",
-                  "parameters": {
-                        "type": "object",
-                        "properties": {
-                              "consumption": {
-                                    "type": "number",
-                                    "description": "Energy consumption in kWh."
-                              },
-                              "tariff_rate": {
-                                    "type": "number",
-                                    "description": "Tariff rate per kWh."
-                              }
-                        },
-                        "required": [
-                              "consumption",
-                              "tariff_rate"
-                        ]
-                  },
-                  "tags": [
-                        "aneel",
-                        "tariffs",
-                        "cost"
-                  ]
-            }
-      ],
-      "defaultInputModes": [
-            "text/plain"
-      ],
-      "defaultOutputModes": [
-            "application/json"
-      ],
-      "url": "http://localhost:8004/mcp/aneel_tariffs",
-      "version": "1.0.0"
+  "id": "aneel.tariffs.agent",
+  "name": "ANEEL Tariffs Agent",
+  "type": "data-provider",
+  "version": "0.1.1",
+  "runtime": {
+    "type": "python",
+    "entrypoint": "domains/origination-viabilidade/apps/aneel_tariffs/app/main.py",
+    "requires": ["fastapi>=0.115","uvicorn>=0.30","pandas","requests","nats-py>=2.6","pydantic>=2.7"]
+  },
+  "tools": [
+    {
+      "name": "aneel.tariffs.components.fetch",
+      "summary": "Busca componentes TE/TUSD por vigência/subgrupo/classe.",
+      "input_schema": { "type":"object","required":["sig_agente","inicio_vigencia"], "properties": { "sig_agente":{"type":"string"}, "inicio_vigencia":{"type":"string","format":"date"}, "fim_vigencia":{"type":"string","format":"date"}, "subgrupo":{"type":"string"}, "modalidade":{"type":"string"}, "classe":{"type":"string"}, "posto_tarifario":{"type":"string"}, "cnpj":{"type":"string"} } },
+      "output_schema": { "type":"object","required":["rows"], "properties": { "rows":{"type":"array","items":{"type":"object"}}, "source":{"type":"string"} } }
+    },
+    {
+      "name": "aneel.tariffs.profile.build",
+      "summary": "Agrega componentes em tariff_profile.",
+      "input_schema": { "type":"object","required":["rows"], "properties": { "rows":{"type":"array","items":{"type":"object"}} } },
+      "output_schema": { "type":"object","required":["tariff_profile"], "properties": { "tariff_profile":{"type":"object"} } }
+    }
+  ],
+  "security": { "pii": false, "allowed_network": ["https://dadosabertos.aneel.gov.br/*"] }
 }

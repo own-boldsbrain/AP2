@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ysh.origination.viability.completed.v1",
+  "type":"object",
+  "required":["lead_id","ts","kwh_year","pr"],
+  "properties":{
+    "lead_id":{"type":"string","format":"uuid"},
+    "ts":{"type":"string","format":"date-time"},
+    "kwh_year":{"type":"number"},
+    "pr":{"type":"number"},
+    "economics":{"type":"object","properties":{
+      "roi_pct":{"type":"number"},"payback_years":{"type":"number"},"tir_pct":{"type":"number"}
+    }},
+    "context":{"type":"object","additionalProperties":true}
+  }
+}

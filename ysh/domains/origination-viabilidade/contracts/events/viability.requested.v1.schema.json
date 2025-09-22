@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ysh.origination.viability.requested.v1",
+  "type":"object",
+  "required":["lead_id","ts","lat","lon"],
+  "properties":{
+    "lead_id":{"type":"string","format":"uuid"},
+    "ts":{"type":"string","format":"date-time"},
+    "lat":{"type":"number"},"lon":{"type":"number"},
+    "tilt_deg":{"type":"number"},"azimuth_deg":{"type":"number"},
+    "mount_type":{"type":"string"},
+    "system_loss_fraction":{"type":"number"},
+    "meteo_source":{"type":"string"}
+  }
+}

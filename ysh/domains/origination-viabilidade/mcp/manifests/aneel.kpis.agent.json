@@ -1,77 +1,17 @@
 {
-      "name": "AneelKpisAgent",
-      "description": "An agent for calculating and retrieving ANEEL electricity KPIs.",
-      "capabilities": {
-            "extensions": [
-                  {
-                        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
-                        "description": "Supports the Agent Payments Protocol.",
-                        "required": true
-                  }
-            ]
-      },
-      "skills": [
-            {
-                  "id": "calculate_electricity_kpis",
-                  "name": "Calculate Electricity KPIs",
-                  "description": "Calculates key performance indicators for electricity consumption and generation.",
-                  "parameters": {
-                        "type": "object",
-                        "properties": {
-                              "consumption_data": {
-                                    "type": "array",
-                                    "description": "Array of consumption values."
-                              },
-                              "generation_data": {
-                                    "type": "array",
-                                    "description": "Array of generation values."
-                              }
-                        },
-                        "required": [
-                              "consumption_data",
-                              "generation_data"
-                        ]
-                  },
-                  "tags": [
-                        "aneel",
-                        "kpis",
-                        "electricity"
-                  ]
-            },
-            {
-                  "id": "get_kpi_report",
-                  "name": "Get KPI Report",
-                  "description": "Generates a report of ANEEL KPIs for a given period.",
-                  "parameters": {
-                        "type": "object",
-                        "properties": {
-                              "start_date": {
-                                    "type": "string",
-                                    "description": "Start date for the report."
-                              },
-                              "end_date": {
-                                    "type": "string",
-                                    "description": "End date for the report."
-                              }
-                        },
-                        "required": [
-                              "start_date",
-                              "end_date"
-                        ]
-                  },
-                  "tags": [
-                        "aneel",
-                        "kpis",
-                        "report"
-                  ]
-            }
-      ],
-      "defaultInputModes": [
-            "text/plain"
-      ],
-      "defaultOutputModes": [
-            "application/json"
-      ],
-      "url": "http://localhost:8005/mcp/aneel_kpis",
-      "version": "1.0.0"
+  "id": "aneel.kpis.agent",
+  "name": "ANEEL KPIs Agent",
+  "type": "data-provider",
+  "version": "0.1.0",
+  "runtime": {
+    "type": "python",
+    "entrypoint": "domains/origination-viabilidade/apps/aneel_kpis/app/main.py",
+    "requires": ["fastapi>=0.115","uvicorn>=0.30","pandas","requests","pydantic>=2.7"]
+  },
+  "tools": [
+    { "name": "aneel.kpis.indger.fetch", "summary": "Indicadores gerenciais da distribuição.", "input_schema": { "type":"object","required":["distribuidora"], "properties": { "distribuidora":{"type":"string"}, "mes":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}$"}, "tipo":{"type":"string","enum":["comercial","tecnico","subestacoes","alimentadores"],"default":"comercial"} } }, "output_schema": { "type":"object","required":["kpis"], "properties": { "kpis":{"type":"array","items":{"type":"object"}}, "source":{"type":"string"} } } },
+    { "name": "aneel.kpis.iasc.fetch",  "summary": "Índice de satisfação do consumidor.", "input_schema": { "type":"object","required":["ano"], "properties": { "ano":{"type":"integer"}, "distribuidora":{"type":"string"} } }, "output_schema": { "type":"object","required":["iasc"], "properties": { "iasc":{"type":"array","items":{"type":"object"}}, "source":{"type":"string"} } } },
+    { "name": "aneel.load_curve.ctr.fetch", "summary": "Curvas de carga (consumidor/rede).", "input_schema": { "type":"object","required":["tipo"], "properties": { "tipo":{"type":"string","enum":["consumidor_tipo","rede_tipo"]}, "uf":{"type":"string"}, "distribuidora":{"type":"string"} } }, "output_schema": { "type":"object","required":["curves"], "properties": { "curves":{"type":"array","items":{"type":"object"}}, "source":{"type":"string"} } } }
+  ],
+  "security": { "pii": false, "allowed_network": ["https://dadosabertos.aneel.gov.br/*"] }
 }
