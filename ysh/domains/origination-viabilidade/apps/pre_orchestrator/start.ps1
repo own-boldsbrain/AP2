@@ -10,22 +10,22 @@ $ConfigFile = "config\$Env.env"
 
 # Verifica se o arquivo de configuração existe
 if (-not (Test-Path $ConfigFile)) {
-    Write-Host "Arquivo de configuração $ConfigFile não encontrado!" -ForegroundColor Red
-    exit 1
+      Write-Host "Arquivo de configuração $ConfigFile não encontrado!" -ForegroundColor Red
+      exit 1
 }
 
 # Carrega variáveis de ambiente
 Get-Content $ConfigFile | ForEach-Object {
-    if (-not ($_.StartsWith('#')) -and ($_.Trim() -ne '')) {
-        $key, $value = $_.Split('=', 2)
-        Set-Item -Path "env:$key" -Value $value
-    }
+      if (-not ($_.StartsWith('#')) -and ($_.Trim() -ne '')) {
+            $key, $value = $_.Split('=', 2)
+            Set-Item -Path "env:$key" -Value $value
+      }
 }
 
 # Inicializa o banco de dados, se necessário
 if ($env:INIT_DB -eq "true") {
-    Write-Host "Inicializando banco de dados..." -ForegroundColor Yellow
-    python -m migrations.01_initialize_pre_orchestrator
+      Write-Host "Inicializando banco de dados..." -ForegroundColor Yellow
+      python -m migrations.01_initialize_pre_orchestrator
 }
 
 # Define a flag de reload
