@@ -29,7 +29,7 @@ Estamos trabalhando em servidores MCP para AP2.
 
 ### Suite MCP E2E 360°
 
-O manifesto [`ap2.e2e360.suite.json`](../../domains/ap2/mcp/manifests/ap2.e2e360.suite.json) consolida os fluxos humano-presente e humano-não-presente, bem como o onboarding de credenciais compatíveis. Ele referencia explicitamente os agentes de Shopping, Merchant, Credentials Provider e Payment Processor, define playbooks MCP (`ap2.e2e.human_present_checkout`, `ap2.e2e.human_absent_checkout`, `ap2.e2e.enable_payment_method`) e aponta as métricas de observabilidade necessárias (`checkout_latency_ms`, `otp_retry_count`). Junto ao manifesto [`pre.e2e360.suite.json`](../../domains/origination-viabilidade/mcp/manifests/pre.e2e360.suite.json), cobrimos 360° do blueprint PRE ↔ AP2 descrito no PRD.
+O manifesto [`ap2.e2e360.suite.json`](../../domains/ap2/mcp/manifests/ap2.e2e360.suite.json) consolida os fluxos humano-presente e humano-não-presente, bem como o onboarding de credenciais compatíveis. Ele referencia explicitamente os agentes de Shopping, Merchant, Credentials Provider e Payment Processor, define playbooks MCP (`ap2.e2e.human_present_checkout`, `ap2.e2e.human_absent_checkout`, `ap2.e2e.enable_payment_method`) e aponta as métricas de observabilidade necessárias (`checkout_latency_ms`, `otp_retry_count`, `viability_latency_ms`, `nats_publish_errors`). Junto ao manifesto [`pre.e2e360.suite.json`](../../domains/origination-viabilidade/mcp/manifests/pre.e2e360.suite.json), cobrimos 360° do blueprint PRE ↔ AP2 descrito no PRD.
 
 ---
 
