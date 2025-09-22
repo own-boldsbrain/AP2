@@ -6,6 +6,7 @@ Os agentes de IA redefinirão o cenário do comércio digital, prometendo conven
 
 Dependendo do apetite de risco deles, os comerciantes devem ter a capacidade de exigir um
 nível mínimo de segurança associado ao método de pagamento se ele for
+
 - Passo 14: O Mandato de Pagamento contém informações que podem ser anexadas ao
     pacote de autorização de transação existente que fornecerá visibilidade para
     PSP/Redes/Emissores de que a transação teve envolvimento de Agente de IA e sua
