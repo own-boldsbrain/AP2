@@ -2,7 +2,7 @@
   "version": "1.2.0",
   "domain": "origination-viabilidade",
   "updated_at": "2025-09-21T00:00:00Z",
-  "id": "solar.viability.agent",
+  "id": "solar_viability.agent",
   "name": "Solar Viability Agent",
   "description": "Agente MCP para pré-sizing fotovoltaico (pvlib + NASA POWER).",
   "type": "executor",

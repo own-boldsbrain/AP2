@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Proposal",
+  "description": "Schema for a proposal artifact, containing the detailed solar viability analysis and recommendations.",
+  "type": "object",
+  "properties": {
+    "proposalId": {
+      "type": "string",
+      "description": "Unique identifier for the proposal.",
+      "format": "uuid"
+    },
+    "contractId": {
+      "type": "string",
+      "description": "Identifier for the associated contract.",
+      "format": "uuid"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of when the proposal was created."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last update."
+    },
+    "version": {
+      "type": "integer",
+      "description": "Version number of the proposal."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "presented",
+        "accepted",
+        "rejected",
+        "expired"
+      ],
+      "description": "The current status of the proposal."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiration date for the proposal."
+    },
+    "technicalAnalysis": {
+      "type": "object",
+      "properties": {
+        "pvSystem": {
+          "type": "object",
+          "properties": {
+            "systemCapacityKw": {
+              "type": "number"
+            },
+            "moduleType": {
+              "type": "string"
+            },
+            "moduleCount": {
+              "type": "integer"
+            },
+            "moduleWattage": {
+              "type": "number"
+            },
+            "inverterType": {
+              "type": "string"
+            },
+            "inverterCount": {
+              "type": "integer"
+            },
+            "mountType": {
+              "type": "string"
+            },
+            "estimatedAnnualProductionKwh": {
+              "type": "number"
+            },
+            "specificYield": {
+              "type": "number",
+              "description": "Annual kWh per kWp"
+            },
+            "performanceRatio": {
+              "type": "number",
+              "description": "System performance ratio"
+            }
+          },
+          "required": [
+            "systemCapacityKw",
+            "estimatedAnnualProductionKwh"
+          ]
+        },
+        "irradianceData": {
+          "type": "object",
+          "description": "Solar irradiance data for the location."
+        },
+        "shadingAnalysis": {
+          "type": "object",
+          "description": "Analysis of shading at the installation site."
+        },
+        "roofAssessment": {
+          "type": "object",
+          "description": "Assessment of the roof for solar panel installation."
+        }
+      },
+      "required": [
+        "pvSystem"
+      ]
+    },
+    "economicAnalysis": {
+      "type": "object",
+      "properties": {
+        "capex": {
+          "type": "number"
+        },
+        "opex": {
+          "type": "number"
+        },
+        "roi_pct": {
+          "type": "number"
+        },
+        "payback_years": {
+          "type": "number"
+        },
+        "tir_pct": {
+          "type": "number"
+        },
+        "cashflow": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "savingsFirstYear": {
+          "type": "number"
+        },
+        "savingsLifetime": {
+          "type": "number"
+        },
+        "financingOptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "optionId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "monthlyPayment": {
+                "type": "number"
+              },
+              "termMonths": {
+                "type": "integer"
+              },
+              "interestRate": {
+                "type": "number"
+              },
+              "totalCost": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "capex",
+        "roi_pct",
+        "payback_years"
+      ]
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recommendationId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "details": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "recommendationId",
+          "title",
+          "description"
+        ]
+      }
+    },
+    "options": {
+      "type": "array",
+      "description": "Different product/service options to offer the customer.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "optionId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "optionId",
+          "name",
+          "price"
+        ]
+      }
+    },
+    "swarmContext": {
+      "type": "object",
+      "description": "Context information for swarm coordination.",
+      "properties": {
+        "swarmId": {
+          "type": "string",
+          "description": "Identifier for the swarm that generated this proposal."
+        },
+        "traceId": {
+          "type": "string",
+          "description": "Trace identifier for end-to-end tracking."
+        },
+        "parentSwarmIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Identifiers for parent swarms, if this is generated by a sub-swarm."
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the proposal.",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "proposalId",
+    "contractId",
+    "createdAt",
+    "version",
+    "status",
+    "technicalAnalysis",
+    "economicAnalysis"
+  ]
+}
