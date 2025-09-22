@@ -1,0 +1,21 @@
+id: ysh.orig.sizing_and_recommendations
+namespace: ysh.origination
+inputs:
+  - name: lead_id
+    type: STRING
+  - name: preferred_tier
+    type: STRING
+    required: false
+tasks:
+  - id: fetch_features
+    type: io.kestra.plugin.core.http.Http
+    uri: "http://feature-store/v1/leads/{{ inputs.lead_id }}/features"
+  - id: compute_kWp
+    type: io.kestra.plugin.core.log.Log
+    message: "Calcular kWp e selecionar band XPP→XGG"
+  - id: build_offers
+    type: io.kestra.plugin.core.log.Log
+    message: "Gerar 3 ofertas + upsell triggers"
+  - id: emit_event
+    type: io.kestra.plugin.core.log.Log
+    message: "Emit recommendation.bundle.created.v1"

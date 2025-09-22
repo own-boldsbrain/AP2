@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ysh.origination.lead.captured.v1",
+  "type": "object",
+  "required": ["lead_id","ts","source","consent"],
+  "properties": {
+    "lead_id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "source": { "type": "string" },
+    "consent": { "type": "boolean" }
+  }
+}

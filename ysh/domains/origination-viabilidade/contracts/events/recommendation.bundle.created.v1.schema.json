@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ysh.origination.recommendation.bundle.created.v1",
+  "type": "object",
+  "required": ["lead_id","ts","tier_code","band_code","kwp","expected_kwh_year","offers"],
+  "properties": {
+    "lead_id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "tier_code": { "type": "string" },
+    "band_code": { "type": "string" },
+    "kwp": { "type": "number" },
+    "expected_kwh_year": { "type": "number" },
+    "offers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sku","title","capex_estimate","payback_estimate"],
+        "properties": {
+          "sku": { "type": "string" },
+          "title": { "type": "string" },
+          "capex_estimate": { "type": "number" },
+          "payback_estimate": { "type": "number" },
+          "upsell": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

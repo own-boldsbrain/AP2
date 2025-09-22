@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ysh.origination.consumption.profile.detected.v1",
+  "type": "object",
+  "required": ["lead_id","ts","consumer_class","uc_type","load_profile","features"],
+  "properties": {
+    "lead_id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "consumer_class": { "type": "string" },
+    "uc_type": { "type": "string" },
+    "load_profile": { "type": "string" },
+    "features": {
+      "type": "object",
+      "properties": {
+        "load_factor": { "type": "number" },
+        "tou_sensitivity": { "type": "object", "additionalProperties": true },
+        "hsp": { "type": "number" },
+        "seasonal_index": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": true
+    }
+  }
+}

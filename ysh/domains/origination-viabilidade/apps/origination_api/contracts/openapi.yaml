@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info: { title: YSH Origination API, version: 0.1.0 }
+paths:
+  /v1/leads:
+    post: { summary: Capturar lead, responses: { "201": { description: Created } } }
+  /v1/leads/{id}/classify:
+    post: { summary: Classificar classe/UC e detectar perfil, responses: { "200": { description: OK } } }
+  /v1/leads/{id}/modality:
+    post: { summary: Selecionar modalidade SCEE (AUTO_LOCAL/REMOTO/GC/MUC), responses: { "201": { description: Created } } }
+  /v1/leads/{id}/size:
+    post: { summary: Calcular dimensionamento (kWp), responses: { "200": { description: OK } } }
+  /v1/leads/{id}/recommendations:
+    post: { summary: Gerar recomendações (tiers 115–160%, XPP→XGG), responses: { "201": { description: Created } } }

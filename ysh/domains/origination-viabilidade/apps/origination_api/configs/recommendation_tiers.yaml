@@ -1,0 +1,5 @@
+tiers:
+  - { code: T115, label: Padrão,     factor: 1.15, upsell_triggers: [BATERIA_LIGHT,O&M_BASIC,INSURANCE_BASIC] }
+  - { code: T130, label: Moderado,   factor: 1.30, upsell_triggers: [BATERIA_STD,EV_CHARGER,O&M_STD,INSURANCE_STD] }
+  - { code: T145, label: Consciente, factor: 1.45, upsell_triggers: [BATERIA_PRO,DSM_TOU,O&M_PRO,INSURANCE_PREMIUM] }
+  - { code: T160, label: Acelerado,  factor: 1.60, upsell_triggers: [EV_CHARGER_PRO,PV_EXPANSION_READY,BATERIA_PRO,O&M_ENTERPRISE] }

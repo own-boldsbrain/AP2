@@ -1,0 +1,7 @@
+kpis:
+  - recommendation_accept_rate
+  - tier_mix_share
+  - band_distribution
+  - upsell_attach_rate
+  - payback_distribution
+  - first_time_to_proposal_p95

@@ -1,0 +1,6 @@
+{
+  "generation_modality_enum": ["AUTO_LOCAL","AUTO_REMOTO","COMPARTILHADA","MUC"],
+  "uc_types_enum": ["RESIDENCIAL","COMERCIAL","INDUSTRIAL","RURAL","PODER_PUBLICO","COND_MUC","MIXED"],
+  "ug_types_enum": ["ROOFTOP_ON_GRID","GROUND_ON_GRID","OFF_GRID_HIBRIDO","PV_BESS","MICRO_PV","MINI_PV"],
+  "tariff_groups": ["A1","A2","A3","A3a","A4","AS","B1","B1_SOCIAL","B2","B3","B4"]
+}

@@ -1,0 +1,7 @@
+kpis:
+  - mql_to_sql
+  - sql_to_proposal
+  - lead_premium_rate
+  - reactivation_rate
+  - t_prop_gen_p95
+  - pr_gap_estimated_vs_offer

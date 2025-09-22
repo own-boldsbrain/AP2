@@ -1,0 +1,9 @@
+bands:
+  - { code: XPP, name: Energia Portátil, kwp_range: [0.0, 0.5], ug_types: [OFF_GRID_HIBRIDO, PV_BESS], uc_fit: [RESIDENCIAL,RURAL] }
+  - { code: XS,  name: Micro Residencial, kwp_range: [0.5, 3.0], ug_types: [ROOFTOP_ON_GRID], uc_fit: [B1] }
+  - { code: S,   name: Residencial Essencial, kwp_range: [3.0, 6.0], ug_types: [ROOFTOP_ON_GRID], uc_fit: [B1,B3] }
+  - { code: M,   name: Residencial Premium / Comercial Leve, kwp_range: [6.0,12.0], ug_types: [ROOFTOP_ON_GRID, PV_BESS], uc_fit: [B1,B3] }
+  - { code: L,   name: Comercial Leve / Condomínio Pequeno, kwp_range: [12.0,30.0], ug_types: [ROOFTOP_ON_GRID, PV_BESS], uc_fit: [B3,B4,COND_MUC] }
+  - { code: XL,  name: Comercial Médio, kwp_range: [30.0,75.0], ug_types: [ROOFTOP_ON_GRID, GROUND_ON_GRID], uc_fit: [B3,B4] }
+  - { code: XG,  name: Comercial/Industrial, kwp_range: [75.0,300.0], ug_types: [GROUND_ON_GRID, ROOFTOP_ON_GRID], uc_fit: [A2,A3,A4,B3] }
+  - { code: XGG, name: Industrial / MUC / Compartilhada, kwp_range: [300.0,1500.0], ug_types: [GROUND_ON_GRID], uc_fit: [A2,A3,A4,COND_MUC,COMPARTILHADA] }

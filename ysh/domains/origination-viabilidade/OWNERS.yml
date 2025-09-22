@@ -1,0 +1,8 @@
+domain: origination-viabilidade
+owner_group: squad-viability-sizing
+pm: "@pm-orig"
+tech_lead: "@techlead-orig"
+security_partner: "@sec-lgpd"
+data_steward: "@data-platform"
+reviewers: ["@pricing","@regulatorio","@leadgen"]
+paths: ["apps/**","workflows/**","contracts/**","data/**","docs/**"]

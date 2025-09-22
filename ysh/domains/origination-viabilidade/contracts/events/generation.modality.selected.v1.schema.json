@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ysh.origination.generation.modality.selected.v1",
+  "type": "object",
+  "required": ["lead_id","ts","generation_modality","allocation"],
+  "properties": {
+    "lead_id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "generation_modality": { "type": "string" },
+    "allocation": {
+      "type": "object",
+      "properties": {
+        "principal_uc": { "type": "string" },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["uc_code","share_percent"],
+            "properties": {
+              "uc_code": { "type": "string" },
+              "share_percent": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

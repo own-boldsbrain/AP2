@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ysh.origination.lead.scored.v1",
+  "type": "object",
+  "required": ["lead_id","ts","tier","score_engagement","score_finance"],
+  "properties": {
+    "lead_id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "tier": { "type": "string" },
+    "score_engagement": { "type": "number", "minimum": 0, "maximum": 1 },
+    "score_finance": { "type": "number", "minimum": 0, "maximum": 1 },
+    "region": { "type": "string" },
+    "features": { "type": "object", "additionalProperties": true }
+  }
+}

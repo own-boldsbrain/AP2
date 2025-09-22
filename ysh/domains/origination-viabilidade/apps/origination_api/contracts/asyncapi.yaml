@@ -1,0 +1,16 @@
+asyncapi: 3.0.0
+info: { title: YSH Origination Events, version: 0.1.0 }
+defaultContentType: application/json
+servers:
+  nats: { host: ${NATS_URL}, protocol: nats }
+channels:
+  ysh.origination.lead.captured.v1:
+    messages: { LeadCaptured: { payload: { type: object, properties: { lead_id: {type: string}, ts: {type: string}, source: {type: string}, consent: {type: boolean} } } } }
+  ysh.origination.consumption.profile.detected.v1:
+    messages: { ProfileDetected: { payload: { type: object, properties: { lead_id: {type: string}, load_profile: {type: string} } } } }
+  ysh.origination.system.sized.v1:
+    messages: { Sized: { payload: { type: object, properties: { lead_id: {type: string}, kwp: {type: number}, kwh_year: {type: number} } } } }
+  ysh.origination.recommendation.bundle.created.v1:
+    messages: { RecoBundle: { payload: { type: object, properties: { lead_id: {type: string}, tier_code: {type: string}, band_code: {type: string}, kwp: {type: number} } } } }
+  ysh.origination.generation.modality.selected.v1:
+    messages: { ModalitySelected: { payload: { type: object, properties: { lead_id: {type: string}, generation_modality: {type: string} } } } }

@@ -1,0 +1,3 @@
+- Como lead, quero simular potência/custo e receber 3 opções (kit/financiamento/integrador).
+- Como analista, quero priorizar leads premium e garantir compliance.
+- Como gestor, quero adequar regra GD (I/II/III) e otimizar payback por concessão.
