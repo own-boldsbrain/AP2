@@ -18,26 +18,27 @@ Each agent uses individual tools to handle distinct tasks throughout the
 shopping and purchasing process, such as updating a cart or initiating payment.
 """
 
-from datetime import datetime
-from datetime import timezone
 import uuid
+from datetime import datetime, timezone
 
 import pandas as pd
 import pvlib
 from a2a.types import Artifact
-from google.adk.tools.tool_context import ToolContext
-
-from .remote_agents import credentials_provider_client
-from .remote_agents import merchant_agent_client
-from ap2.types.contact_picker import ContactAddress
-from ap2.types.mandate import CART_MANDATE_DATA_KEY
-from ap2.types.mandate import CartMandate
-from ap2.types.mandate import PAYMENT_MANDATE_DATA_KEY
-from ap2.types.mandate import PaymentMandate
-from ap2.types.mandate import PaymentMandateContents
-from ap2.types.payment_request import PaymentResponse
 from common import artifact_utils
 from common.a2a_message_builder import A2aMessageBuilder
+from google.adk.tools.tool_context import ToolContext
+
+from ap2.types.contact_picker import ContactAddress
+from ap2.types.mandate import (
+    CART_MANDATE_DATA_KEY,
+    PAYMENT_MANDATE_DATA_KEY,
+    CartMandate,
+    PaymentMandate,
+    PaymentMandateContents,
+)
+from ap2.types.payment_request import PaymentResponse
+
+from .remote_agents import credentials_provider_client, merchant_agent_client
 
 
 async def update_cart(
@@ -329,3 +330,6 @@ async def calculate_solar_position(
     zenith = solpos['zenith'].iloc[0]
     azimuth = solpos['azimuth'].iloc[0]
     return f"Solar zenith: {zenith:.2f} degrees, Azimuth: {azimuth:.2f} degrees"
+    zenith = solpos['zenith'].iloc[0]
+    azimuth = solpos['azimuth'].iloc[0]
+    return f'Solar zenith: {zenith:.2f} degrees, Azimuth: {azimuth:.2f} degrees'
