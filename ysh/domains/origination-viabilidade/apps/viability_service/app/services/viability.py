@@ -1,5 +1,7 @@
 from math import isnan
+from typing import Any, Dict, Optional
 
+from app.meteo.pv_system import estimate_pv_performance
 from pydantic import BaseModel
 
 
@@ -16,20 +18,30 @@ class ViabilityIn(BaseModel):
 class ViabilityOut(BaseModel):
     kwh_year: float
     pr: float
-    mc_result: dict | None = None
+    mc_result: Dict[str, Any] | None = None
 
 
 def compute_viability(inp: ViabilityIn) -> ViabilityOut:
-    # MVP: usa média HSP de 5.0h/dia se não houver meteo externo.
-    HSP = 5.0
-    PR = 0.80
-    losses = inp.system_loss_fraction
-    # Considera 1 kWp base e retorna kWh/kWp/ano ~ HSP*365*PR*(1-losses)
-    kwh_per_kwp_year = HSP * 365 * PR * (1 - losses)
-    # Retorna por kWp; o sizing final determinará kWp
+    """
+    Computa a viabilidade energética de um sistema fotovoltaico.
+
+    Utiliza o pvlib e dados NASA POWER para calcular a geração anual
+    e o Performance Ratio (PR) para um sistema de 1kWp.
+    """
+    # Chama o módulo pv_system para estimativa completa
+    result = estimate_pv_performance(
+        latitude=inp.lat,
+        longitude=inp.lon,
+        tilt=inp.tilt_deg,
+        azimuth=inp.azimuth_deg,
+        mount_type=inp.mount_type,
+        system_loss=inp.system_loss_fraction,
+        meteo_source=inp.meteo_source,
+    )
+
+    # Converte o resultado para o formato de saída
     return ViabilityOut(
-        kwh_year=round(kwh_per_kwp_year, 1), pr=round(PR * (1 - losses), 3)
-    )  # Retorna por kWp; o sizing final determinará kWp
-    return ViabilityOut(
-        kwh_year=round(kwh_per_kwp_year, 1), pr=round(PR * (1 - losses), 3)
+        kwh_year=result['kwh_year'],
+        pr=result['pr'],
+        mc_result=result['mc_result'],
     )
