@@ -45,6 +45,7 @@ class SizingIn(BaseModel):
 
 class SizingOut(BaseModel):
     lead_id: str
+    band_code: str
     kwp: float
     expected_kwh_year: float
     pr: float
