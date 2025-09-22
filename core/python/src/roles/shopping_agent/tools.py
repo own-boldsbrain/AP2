@@ -330,3 +330,6 @@ async def calculate_solar_position(
     zenith = solpos['zenith'].iloc[0]
     azimuth = solpos['azimuth'].iloc[0]
     return f"Solar zenith: {zenith:.2f} degrees, Azimuth: {azimuth:.2f} degrees"
+    zenith = solpos['zenith'].iloc[0]
+    azimuth = solpos['azimuth'].iloc[0]
+    return f'Solar zenith: {zenith:.2f} degrees, Azimuth: {azimuth:.2f} degrees'
