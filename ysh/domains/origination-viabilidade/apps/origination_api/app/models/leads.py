@@ -1,7 +1,13 @@
-from sqlalchemy import JSON, Boolean, Numeric, String, TIMESTAMP, text
-from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime, timezone
+
+from sqlalchemy import Float, JSON, Boolean, ForeignKey, Numeric, String, TIMESTAMP, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class Lead(Base):
@@ -32,6 +38,10 @@ class Lead(Base):
     region: Mapped[str | None] = mapped_column(String(64))
     status: Mapped[str | None] = mapped_column(String(32))
 
+    geo_kpis: Mapped["LeadGeoKPIs" | None] = relationship(
+        back_populates="lead", uselist=False
+    )
+
 
 class LeadFeatures(Base):
     __tablename__ = "lead_features"
@@ -58,3 +68,27 @@ class Recommendation(Base):
     expected_kwh_year: Mapped[float | None] = mapped_column(Numeric)
     upsell: Mapped[dict | None] = mapped_column(JSON)
     details: Mapped[dict | None] = mapped_column(JSON)
+
+
+class LeadGeoKPIs(Base):
+    __tablename__ = "lead_geo_kpis"
+
+    composite_key: Mapped[str] = mapped_column(String, primary_key=True)
+    lead_id: Mapped[str] = mapped_column(
+        String, ForeignKey("leads.lead_id"), unique=True, index=True
+    )
+    cpf: Mapped[str] = mapped_column(String(32))
+    cep: Mapped[str] = mapped_column(String(16))
+    latitude: Mapped[float] = mapped_column(Float)
+    longitude: Mapped[float] = mapped_column(Float)
+    properties: Mapped[dict] = mapped_column(JSON, default=dict)
+    kpis: Mapped[dict] = mapped_column(JSON, default=dict)
+    geojson: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=_utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    lead: Mapped[Lead] = relationship(back_populates="geo_kpis")
