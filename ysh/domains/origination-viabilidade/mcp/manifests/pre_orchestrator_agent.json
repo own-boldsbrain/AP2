@@ -1,0 +1,436 @@
+{
+      "name": "PREOrchestratorAgent",
+      "description": "Agente autônomo coordenador para orquestrar o processo PRE (captação → viabilidade → proposta) com máxima acurácia técnica, regulatória e econômica, gerando 3 ofertas (Base/Plus/Pro), prontos para homologação digital e handoff às próximas fases.",
+      "capabilities": {
+            "extensions": [
+                  {
+                        "uri": "https://github.com/google-agentic-commerce/ap2/v1",
+                        "description": "Supports the Agent Payments Protocol.",
+                        "required": true
+                  }
+            ]
+      },
+      "skills": [
+            {
+                  "id": "create_update_lead",
+                  "name": "Criar ou Atualizar Lead",
+                  "description": "Cria ou atualiza um lead no sistema, respeitando as regras de consentimento LGPD e integridade dos dados.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "lead_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Identificador único do lead."
+                              },
+                              "source": {
+                                    "type": "string",
+                                    "description": "Origem do lead (ex: landing, referral, etc)."
+                              },
+                              "name": {
+                                    "type": "string",
+                                    "description": "Nome do cliente."
+                              },
+                              "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "description": "Email do cliente."
+                              },
+                              "phone": {
+                                    "type": "string",
+                                    "description": "Telefone do cliente."
+                              },
+                              "consent": {
+                                    "type": "boolean",
+                                    "description": "Indica se o cliente deu consentimento para uso dos dados (LGPD)."
+                              },
+                              "cep": {
+                                    "type": "string",
+                                    "description": "CEP do cliente."
+                              },
+                              "uf": {
+                                    "type": "string",
+                                    "description": "Estado (UF) do cliente."
+                              },
+                              "municipio": {
+                                    "type": "string",
+                                    "description": "Município do cliente."
+                              },
+                              "lat": {
+                                    "type": "number",
+                                    "description": "Latitude da localização."
+                              },
+                              "lon": {
+                                    "type": "number",
+                                    "description": "Longitude da localização."
+                              }
+                        },
+                        "required": [
+                              "lead_id",
+                              "consent",
+                              "name",
+                              "email",
+                              "phone"
+                        ]
+                  },
+                  "tags": [
+                        "lead",
+                        "lgpd",
+                        "customer"
+                  ]
+            },
+            {
+                  "id": "classify_consumer",
+                  "name": "Classificar Consumidor",
+                  "description": "Classifica o tipo de consumidor, grupo tarifário, classe e subclasse, e tipo de UC.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "lead_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Identificador único do lead."
+                              },
+                              "tariff_group": {
+                                    "type": "string",
+                                    "description": "Grupo tarifário (ex: A4, B1, B3)."
+                              },
+                              "consumer_class": {
+                                    "type": "string",
+                                    "enum": [
+                                          "RESIDENCIAL",
+                                          "COMERCIAL",
+                                          "INDUSTRIAL",
+                                          "RURAL",
+                                          "PODER_PUBLICO"
+                                    ],
+                                    "description": "Classe de consumidor."
+                              },
+                              "consumer_subclass": {
+                                    "type": "string",
+                                    "description": "Subclasse de consumidor."
+                              },
+                              "uc_type": {
+                                    "type": "string",
+                                    "enum": [
+                                          "RESIDENCIAL",
+                                          "COMERCIAL",
+                                          "INDUSTRIAL",
+                                          "RURAL",
+                                          "COND_MUC",
+                                          "MIXED"
+                                    ],
+                                    "description": "Tipo de unidade consumidora."
+                              }
+                        },
+                        "required": [
+                              "lead_id",
+                              "tariff_group",
+                              "consumer_class",
+                              "uc_type"
+                        ]
+                  },
+                  "tags": [
+                        "classification",
+                        "tariff",
+                        "consumer"
+                  ]
+            },
+            {
+                  "id": "select_modality",
+                  "name": "Selecionar Modalidade",
+                  "description": "Seleciona a modalidade de geração mais adequada (AUTO_LOCAL, AUTO_REMOTO, COMPARTILHADA, MUC).",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "lead_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Identificador único do lead."
+                              },
+                              "generation_modality": {
+                                    "type": "string",
+                                    "enum": [
+                                          "AUTO_LOCAL",
+                                          "AUTO_REMOTO",
+                                          "COMPARTILHADA",
+                                          "MUC"
+                                    ],
+                                    "description": "Modalidade de geração."
+                              },
+                              "principal_uc": {
+                                    "type": "string",
+                                    "description": "Identificador da UC principal."
+                              },
+                              "members": {
+                                    "type": "array",
+                                    "items": {
+                                          "type": "string"
+                                    },
+                                    "description": "Identificadores das UCs membros (para modalidades COMPARTILHADA e MUC)."
+                              }
+                        },
+                        "required": [
+                              "lead_id",
+                              "generation_modality"
+                        ]
+                  },
+                  "tags": [
+                        "modality",
+                        "generation"
+                  ]
+            },
+            {
+                  "id": "calculate_viability",
+                  "name": "Calcular Viabilidade",
+                  "description": "Calcula a viabilidade técnica do sistema solar baseado na localização e outros parâmetros.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "lat": {
+                                    "type": "number",
+                                    "description": "Latitude da localização."
+                              },
+                              "lon": {
+                                    "type": "number",
+                                    "description": "Longitude da localização."
+                              },
+                              "tilt_deg": {
+                                    "type": "number",
+                                    "description": "Inclinação dos painéis em graus."
+                              },
+                              "azimuth_deg": {
+                                    "type": "number",
+                                    "description": "Azimute dos painéis em graus."
+                              },
+                              "mount_type": {
+                                    "type": "string",
+                                    "description": "Tipo de montagem dos painéis."
+                              },
+                              "system_loss_fraction": {
+                                    "type": "number",
+                                    "description": "Fração de perdas do sistema."
+                              },
+                              "meteo_source": {
+                                    "type": "string",
+                                    "description": "Fonte de dados meteorológicos."
+                              }
+                        },
+                        "required": [
+                              "lat",
+                              "lon"
+                        ]
+                  },
+                  "tags": [
+                        "viability",
+                        "solar",
+                        "technical"
+                  ]
+            },
+            {
+                  "id": "evaluate_economics",
+                  "name": "Avaliar Economia",
+                  "description": "Avalia a viabilidade econômica do sistema solar (ROI, Payback, TIR).",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "kwh_year": {
+                                    "type": "number",
+                                    "description": "Produção anual de energia em kWh."
+                              },
+                              "tariff_profile": {
+                                    "type": "object",
+                                    "description": "Perfil tarifário do cliente."
+                              },
+                              "capex": {
+                                    "type": "number",
+                                    "description": "Investimento inicial (CAPEX)."
+                              },
+                              "opex": {
+                                    "type": "number",
+                                    "description": "Custo operacional anual (OPEX)."
+                              }
+                        },
+                        "required": [
+                              "kwh_year",
+                              "tariff_profile",
+                              "capex"
+                        ]
+                  },
+                  "tags": [
+                        "economics",
+                        "roi",
+                        "payback"
+                  ]
+            },
+            {
+                  "id": "size_system",
+                  "name": "Dimensionar Sistema",
+                  "description": "Dimensiona o sistema solar em kWp e mapeia para bandas e tiers.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "consumo_anual": {
+                                    "type": "number",
+                                    "description": "Consumo anual em kWh."
+                              },
+                              "hsp": {
+                                    "type": "number",
+                                    "description": "Horas de Sol Pleno (HSP)."
+                              },
+                              "pr": {
+                                    "type": "number",
+                                    "description": "Performance Ratio (PR)."
+                              },
+                              "perdas": {
+                                    "type": "number",
+                                    "description": "Fração de perdas do sistema."
+                              },
+                              "fator_tier": {
+                                    "type": "number",
+                                    "description": "Fator do tier (T115=1.15, T130=1.30, T145=1.45, T160=1.60)."
+                              }
+                        },
+                        "required": [
+                              "consumo_anual",
+                              "hsp",
+                              "pr"
+                        ]
+                  },
+                  "tags": [
+                        "sizing",
+                        "dimensionamento",
+                        "kWp"
+                  ]
+            },
+            {
+                  "id": "generate_recommendations",
+                  "name": "Gerar Recomendações",
+                  "description": "Gera um bundle de recomendações com opções Base/Plus/Pro e oportunidades de Up/Cross-sell.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "lead_id": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "description": "Identificador único do lead."
+                              },
+                              "tier_code": {
+                                    "type": "string",
+                                    "description": "Código do tier (T115, T130, T145, T160)."
+                              },
+                              "band_code": {
+                                    "type": "string",
+                                    "description": "Código da banda (XPP, XS, S, M, L, XL, XG, XGG)."
+                              },
+                              "kwp": {
+                                    "type": "number",
+                                    "description": "Potência do sistema em kWp."
+                              },
+                              "expected_kwh_year": {
+                                    "type": "number",
+                                    "description": "Produção anual esperada em kWh."
+                              },
+                              "tariff_profile": {
+                                    "type": "object",
+                                    "description": "Perfil tarifário do cliente."
+                              },
+                              "generation_modality": {
+                                    "type": "string",
+                                    "description": "Modalidade de geração."
+                              },
+                              "preferred_tier": {
+                                    "type": "string",
+                                    "description": "Tier preferido pelo cliente."
+                              }
+                        },
+                        "required": [
+                              "lead_id",
+                              "band_code",
+                              "kwp",
+                              "expected_kwh_year"
+                        ]
+                  },
+                  "tags": [
+                        "recommendations",
+                        "upsell",
+                        "cross-sell"
+                  ]
+            },
+            {
+                  "id": "emit_event",
+                  "name": "Emitir Evento",
+                  "description": "Emite eventos no sistema NATS.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "event_type": {
+                                    "type": "string",
+                                    "enum": [
+                                          "lead.captured.v1",
+                                          "consumption.profile.detected.v1",
+                                          "system.sized.v1",
+                                          "recommendation.bundle.created.v1",
+                                          "generation.modality.selected.v1",
+                                          "viability.requested.v1",
+                                          "viability.completed.v1"
+                                    ],
+                                    "description": "Tipo de evento a ser emitido."
+                              },
+                              "payload": {
+                                    "type": "object",
+                                    "description": "Payload do evento."
+                              }
+                        },
+                        "required": [
+                              "event_type",
+                              "payload"
+                        ]
+                  },
+                  "tags": [
+                        "events",
+                        "nats",
+                        "messaging"
+                  ]
+            },
+            {
+                  "id": "orchestrate_pre_process",
+                  "name": "Orquestrar Processo PRE",
+                  "description": "Orquestra todo o processo PRE (captação → viabilidade → proposta) de forma coordenada.",
+                  "parameters": {
+                        "type": "object",
+                        "properties": {
+                              "lead_data": {
+                                    "type": "object",
+                                    "description": "Dados do lead."
+                              },
+                              "consumption_data": {
+                                    "type": "object",
+                                    "description": "Dados de consumo."
+                              },
+                              "preferences": {
+                                    "type": "object",
+                                    "description": "Preferências do cliente."
+                              }
+                        },
+                        "required": [
+                              "lead_data"
+                        ]
+                  },
+                  "tags": [
+                        "orchestration",
+                        "pre",
+                        "process"
+                  ]
+            }
+      ],
+      "defaultInputModes": [
+            "text/plain",
+            "application/json"
+      ],
+      "defaultOutputModes": [
+            "application/json"
+      ],
+      "url": "http://origination_api:8000/mcp/pre_orchestrator",
+      "version": "1.0.0"
+}
