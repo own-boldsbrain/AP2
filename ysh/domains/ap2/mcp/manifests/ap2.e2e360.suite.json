@@ -28,25 +28,37 @@
         "id": "shopping_agent",
         "manifest": "./shopping_agent.json",
         "role": "Shopping ADK responsável por coletar mandato de intenção, montar carrinho e conduzir usuário.",
-        "transport": ["A2A", "MCP"]
+        "transport": [
+          "A2A",
+          "MCP"
+        ]
       },
       {
         "id": "merchant_agent",
         "manifest": "./merchant_agent.json",
         "role": "Comerciante que mantém catálogo, carrinho, mandatos e delega pagamentos ao processador.",
-        "transport": ["A2A", "MCP"]
+        "transport": [
+          "A2A",
+          "MCP"
+        ]
       },
       {
         "id": "credentials_provider_agent",
         "manifest": "./credentials_provider_agent.json",
         "role": "Provedor de credenciais que tokeniza métodos, valida OTP e mantém contas confiáveis.",
-        "transport": ["A2A", "MCP"]
+        "transport": [
+          "A2A",
+          "MCP"
+        ]
       },
       {
         "id": "merchant_payment_processor_agent",
         "manifest": "./merchant_payment_processor_agent.json",
         "role": "Processador do comerciante responsável por desafios, autenticação e autorização final.",
-        "transport": ["A2A", "MCP"]
+        "transport": [
+          "A2A",
+          "MCP"
+        ]
       }
     ],
     "services": [
@@ -60,6 +72,24 @@
         "name": "risk_memory_store",
         "type": "in-memory",
         "purpose": "Compartilhar risk_data entre shopping agent, merchant e processador."
+      },
+      {
+        "name": "pre_event_bridge",
+        "type": "messaging",
+        "protocol": "nats://",
+        "topics": [
+          "viability.requested.v1",
+          "viability.completed.v1",
+          "recommendation.bundle.created.v1"
+        ],
+        "purpose": "Permitir correlação PRE ↔ AP2 durante a varredura 360°."
+      }
+    ],
+    "suites": [
+      {
+        "id": "pre.e2e360.suite",
+        "manifest": "../origination-viabilidade/mcp/manifests/pre.e2e360.suite.json",
+        "purpose": "Complementar diagnóstico 360° correlacionando originação PRE com checkout AP2."
       }
     ]
   },
@@ -69,56 +99,109 @@
       "summary": "Executa o fluxo humano-presente ponta-a-ponta (mandatos → carrinho → tokenização → OTP → recibo).",
       "input_schema": {
         "type": "object",
-        "required": ["user", "cart", "presence_channel"],
+        "required": [
+          "user",
+          "cart",
+          "presence_channel"
+        ],
         "properties": {
           "user": {
             "type": "object",
-            "required": ["id", "display_name"],
+            "required": [
+              "id",
+              "display_name"
+            ],
             "properties": {
-              "id": {"type": "string"},
-              "display_name": {"type": "string"},
-              "contact": {"type": "object"},
-              "risk_hints": {"type": "object"}
+              "id": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": "string"
+              },
+              "contact": {
+                "type": "object"
+              },
+              "risk_hints": {
+                "type": "object"
+              }
             }
           },
           "cart": {
             "type": "object",
-            "required": ["items"],
+            "required": [
+              "items"
+            ],
             "properties": {
-              "cart_id": {"type": "string"},
+              "cart_id": {
+                "type": "string"
+              },
               "items": {
                 "type": "array",
-                "items": {"type": "object"}
+                "items": {
+                  "type": "object"
+                }
               },
-              "merchant": {"type": "string"},
-              "totals": {"type": "object"}
+              "merchant": {
+                "type": "string"
+              },
+              "totals": {
+                "type": "object"
+              }
             }
           },
-          "shipping_address": {"type": "object"},
+          "shipping_address": {
+            "type": "object"
+          },
           "presence_channel": {
             "type": "string",
-            "enum": ["human_present"],
+            "enum": [
+              "human_present"
+            ],
             "description": "Identifica que o usuário está presente (OTP in-band)."
           },
-          "payment_preferences": {"type": "object"},
-          "debug_mode": {"type": "boolean", "default": false}
+          "payment_preferences": {
+            "type": "object"
+          },
+          "debug_mode": {
+            "type": "boolean",
+            "default": false
+          }
         }
       },
       "output_schema": {
         "type": "object",
-        "required": ["receipt", "mandates", "events"],
+        "required": [
+          "receipt",
+          "mandates",
+          "events"
+        ],
         "properties": {
-          "receipt": {"type": "object"},
+          "receipt": {
+            "type": "object"
+          },
           "mandates": {
             "type": "object",
             "properties": {
-              "cart_mandate": {"type": "object"},
-              "payment_mandate": {"type": "object"}
+              "cart_mandate": {
+                "type": "object"
+              },
+              "payment_mandate": {
+                "type": "object"
+              }
             }
           },
-          "events": {"type": "array", "items": {"type": "string"}},
-          "watch_log_path": {"type": "string"},
-          "latency_ms": {"type": "number"}
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "watch_log_path": {
+            "type": "string"
+          },
+          "latency_ms": {
+            "type": "number"
+          }
         }
       },
       "playbook": [
@@ -184,33 +267,70 @@
       "summary": "Fluxo humano-não-presente usando IntentMandate com TTL e callbacks.",
       "input_schema": {
         "type": "object",
-        "required": ["intent_mandate", "cart_blueprint", "callback"],
+        "required": [
+          "intent_mandate",
+          "cart_blueprint",
+          "callback"
+        ],
         "properties": {
-          "intent_mandate": {"type": "object"},
-          "cart_blueprint": {"type": "object"},
+          "intent_mandate": {
+            "type": "object"
+          },
+          "cart_blueprint": {
+            "type": "object"
+          },
           "callback": {
             "type": "object",
-            "required": ["uri"],
+            "required": [
+              "uri"
+            ],
             "properties": {
-              "uri": {"type": "string", "format": "uri"},
-              "auth": {"type": "object"}
+              "uri": {
+                "type": "string",
+                "format": "uri"
+              },
+              "auth": {
+                "type": "object"
+              }
             }
           },
           "allowed_payment_networks": {
             "type": "array",
-            "items": {"type": "string"}
+            "items": {
+              "type": "string"
+            }
           },
-          "service_level_agreement_s": {"type": "number", "default": 600}
+          "service_level_agreement_s": {
+            "type": "number",
+            "default": 600
+          }
         }
       },
       "output_schema": {
         "type": "object",
-        "required": ["receipt", "callbacks"],
+        "required": [
+          "receipt",
+          "callbacks"
+        ],
         "properties": {
-          "receipt": {"type": "object"},
-          "callbacks": {"type": "array", "items": {"type": "object"}},
-          "mandates": {"type": "object"},
-          "events": {"type": "array", "items": {"type": "string"}}
+          "receipt": {
+            "type": "object"
+          },
+          "callbacks": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "mandates": {
+            "type": "object"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       },
       "playbook": [
@@ -261,38 +381,82 @@
       "summary": "Onboarding/tokenação de um método suportado pelo comerciante para destravar checkout futuro.",
       "input_schema": {
         "type": "object",
-        "required": ["user", "credential"],
+        "required": [
+          "user",
+          "credential"
+        ],
         "properties": {
           "user": {
             "type": "object",
-            "required": ["id"],
+            "required": [
+              "id"
+            ],
             "properties": {
-              "id": {"type": "string"},
-              "display_name": {"type": "string"}
+              "id": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": "string"
+              }
             }
           },
           "credential": {
             "type": "object",
-            "required": ["scheme", "issuer"],
+            "required": [
+              "scheme",
+              "issuer"
+            ],
             "properties": {
-              "scheme": {"type": "string", "enum": ["CARD", "PIX", "WALLET"]},
-              "issuer": {"type": "string"},
-              "last4": {"type": "string"},
-              "expiry": {"type": "string"}
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "CARD",
+                  "PIX",
+                  "WALLET"
+                ]
+              },
+              "issuer": {
+                "type": "string"
+              },
+              "last4": {
+                "type": "string"
+              },
+              "expiry": {
+                "type": "string"
+              }
             }
           },
-          "billing_address": {"type": "object"},
-          "risk_hints": {"type": "object"},
-          "debug_mode": {"type": "boolean", "default": false}
+          "billing_address": {
+            "type": "object"
+          },
+          "risk_hints": {
+            "type": "object"
+          },
+          "debug_mode": {
+            "type": "boolean",
+            "default": false
+          }
         }
       },
       "output_schema": {
         "type": "object",
-        "required": ["token", "mandate"],
+        "required": [
+          "token",
+          "mandate"
+        ],
         "properties": {
-          "token": {"type": "string"},
-          "mandate": {"type": "object"},
-          "events": {"type": "array", "items": {"type": "string"}}
+          "token": {
+            "type": "string"
+          },
+          "mandate": {
+            "type": "object"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       },
       "playbook": [
@@ -349,22 +513,59 @@
         "path": ".logs/watch.log",
         "format": "line-delimited json",
         "retention": "per scenario"
+      },
+      "pre_orchestrator": {
+        "path": "domains/origination-viabilidade/apps/pre_orchestrator/.logs/server.log",
+        "format": "structured-json",
+        "retention": "per scenario",
+        "description": "Log MCP do orquestrador PRE para correlação de contexto."
       }
     },
     "metrics": [
       {
         "name": "checkout_latency_ms",
         "description": "Tempo total entre IntentMandate e recibo.",
-        "target": {"p95": 5000}
+        "target": {
+          "p95": 5000
+        }
       },
       {
         "name": "otp_retry_count",
         "description": "Número de tentativas de OTP por transação.",
-        "target": {"max": 3}
+        "target": {
+          "max": 3
+        }
+      },
+      {
+        "name": "viability_latency_ms",
+        "description": "Tempo entre viability.requested.v1 e viability.completed.v1 para a jornada combinada PRE ↔ AP2.",
+        "target": {
+          "p95": 3000
+        }
+      },
+      {
+        "name": "nats_publish_errors",
+        "description": "Falhas ao publicar eventos PRE necessários para desbloquear o checkout AP2.",
+        "target": {
+          "max": 0
+        }
       }
     ],
     "traces": {
       "propagation": "context_id compartilhado em events e logs"
     }
+  },
+  "diagnostics": {
+    "checklist": [
+      "Correlacionar context_id entre watch.log e eventos PRE publicados no NATS.",
+      "Validar recebimento de ap2.checkout.* e recommendation.bundle.created.v1 no mesmo run.",
+      "Inspecionar nats_publish_errors e otp_retry_count antes de aprovar a saúde do cenário."
+    ],
+    "automation": [
+      {
+        "name": "run_ap2_pre_360",
+        "description": "Workflow sugerido: executar playbooks ap2.e2e.* e pre.e2e.* em sequência e coletar métricas/watch.log automaticamente."
+      }
+    ]
   }
 }
