@@ -1,16 +1,22 @@
-import uuid
 from collections.abc import Iterable
+from pathlib import Path
+import uuid
 
 import yaml
 
 from app.services.sizing import choose_band, sizing_summary
 
-with open("configs/project_size_bands.yaml", "r", encoding="utf-8") as fp:
-    PROJECT_BANDS = yaml.safe_load(fp)["bands"]
-with open("configs/recommendation_tiers.yaml", "r", encoding="utf-8") as fp:
-    TIERS = {tier["code"]: tier for tier in yaml.safe_load(fp)["tiers"]}
-with open("configs/upsell_rules.yaml", "r", encoding="utf-8") as fp:
-    UPSELL = yaml.safe_load(fp)["rules"]
+CONFIG_DIR = Path(__file__).resolve().parents[2] / "configs"
+
+
+def _load_yaml(name: str) -> dict:
+    with (CONFIG_DIR / name).open("r", encoding="utf-8") as fp:
+        return yaml.safe_load(fp)
+
+
+PROJECT_BANDS = _load_yaml("project_size_bands.yaml")["bands"]
+TIERS = {tier["code"]: tier for tier in _load_yaml("recommendation_tiers.yaml")["tiers"]}
+UPSELL = _load_yaml("upsell_rules.yaml")["rules"]
 
 
 def _matches(expected: Iterable, value: str | None) -> bool:

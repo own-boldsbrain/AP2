@@ -1,12 +1,5 @@
-"""
-PRE Orchestrator package.
-
-Este pacote contém a implementação do agente autônomo coordenador para
-orquestrar o processo PRE (captação → viabilidade → proposta) para o Yello
-Solar Hub.
-"""
+"""PRE Orchestrator package public interface."""
 
 from .agent import PREOrchestratorAgent
 
 __all__ = ["PREOrchestratorAgent"]
-__all__ = ['PREOrchestratorAgent']

@@ -1,5 +1,7 @@
 from typing import Any, Dict, Tuple
 
+from typing import Any, Dict, Tuple
+
 DEFAULT_PR = 0.80
 DEFAULT_LOSSES = 0.14
 DAYS = 365
