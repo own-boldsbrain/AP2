@@ -1,6 +1,7 @@
-from typing import List, Optional
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 
 
 class LeadCreate(BaseModel):
@@ -59,3 +60,43 @@ class RecommendationOut(BaseModel):
     expected_kwh_year: float
     offers: list
     upsell: List[str] = Field(default_factory=list)
+
+
+class KPIBundle(BaseModel):
+    bacen: Dict[str, Any] = Field(default_factory=dict)
+    epe: Dict[str, Any] = Field(default_factory=dict)
+    aneel: Dict[str, Any] = Field(default_factory=dict)
+    ibge: Dict[str, Any] = Field(default_factory=dict)
+    quod: Dict[str, Any] = Field(default_factory=dict)
+
+
+class GeoKPIIn(BaseModel):
+    cpf: str
+    cep: str
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    kpis: KPIBundle = Field(default_factory=KPIBundle)
+    properties: Dict[str, Any] = Field(default_factory=dict)
+
+
+class GeoKPIOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    lead_id: str
+    composite_key: str
+    cpf: str
+    cep: str
+    latitude: float
+    longitude: float
+    properties: Dict[str, Any]
+    geojson: Dict[str, Any]
+    kpis: KPIBundle
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    @field_validator("kpis", mode="before")
+    @classmethod
+    def _ensure_bundle(cls, value: Dict[str, Any] | KPIBundle) -> KPIBundle:
+        if isinstance(value, KPIBundle):
+            return value
+        return KPIBundle(**value)
