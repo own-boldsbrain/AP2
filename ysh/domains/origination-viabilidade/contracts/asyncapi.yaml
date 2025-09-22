@@ -1,0 +1,45 @@
+asyncapi: '2.5.0'
+info:
+  title: Origination & Viability Domain Events
+  version: '1.0.0'
+  description: >-
+    Event definitions for the Origination and Viability domain, facilitating
+    communication between microservices.
+
+servers:
+  nats:
+    url: nats://localhost:4222
+    protocol: nats
+
+channels:
+  viability.check.requested:
+    publish:
+      summary: Publish a request for a new viability check.
+      operationId: publishViabilityCheckRequested
+      message:
+        $ref: '#/components/messages/ViabilityCheckRequested'
+
+  viability.analysis.completed:
+    subscribe:
+      summary: Subscribe to the results of a completed viability analysis.
+      operationId: onViabilityAnalysisCompleted
+      message:
+        $ref: '#/components/messages/ViabilityAnalysisCompleted'
+
+components:
+  messages:
+    ViabilityCheckRequested:
+      name: ViabilityCheckRequested
+      title: Viability Check Requested
+      summary: Informs that a new viability check has been requested by a user or system.
+      contentType: application/json
+      payload:
+        $ref: '../contracts/events/viability_check_requested.schema.json'
+
+    ViabilityAnalysisCompleted:
+      name: ViabilityAnalysisCompleted
+      title: Viability Analysis Completed
+      summary: Reports the final outcome of the solar and economic viability analysis.
+      contentType: application/json
+      payload:
+        $ref: '../contracts/events/viability_analysis_completed.schema.json'

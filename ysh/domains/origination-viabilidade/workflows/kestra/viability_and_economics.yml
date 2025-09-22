@@ -1,0 +1,44 @@
+id: viability_and_economics
+namespace: ysh.origination
+description: Orquestra a análise de viabilidade solar e econômica.
+
+tasks:
+  - id: start_viability_check
+    type: io.kestra.core.tasks.flows.Trigger
+    triggerId: on_viability_check_requested
+
+  - id: run_solar_analysis
+    type: io.kestra.plugin.fs.http.Request
+    uri: http://viability-service/analyze/solar
+    method: POST
+    body: "{{ trigger.data | json }}"
+    retry:
+      maxAttempt: 3
+      delay: PT10S
+
+  - id: run_aneel_analysis
+    type: io.kestra.plugin.fs.http.Request
+    uri: http://viability-service/analyze/aneel
+    method: POST
+    body: "{{ trigger.data | json }}"
+    retry:
+      maxAttempt: 3
+      delay: PT10S
+
+  - id: consolidate_results
+    type: io.kestra.core.tasks.scripts.Python
+    script: |
+      from kestra import Kestra
+      kestra = Kestra()
+      solar_results = kestra.get_task_run("run_solar_analysis").outputs["body"]
+      aneel_results = kestra.get_task_run("run_aneel_analysis").outputs["body"]
+      
+      # Lógica para consolidar e publicar o resultado final
+      print(f"Solar Analysis: {solar_results}")
+      print(f"ANEEL Analysis: {aneel_results}")
+
+triggers:
+  - id: on_viability_check_requested
+    type: io.kestra.plugin.nats.Trigger
+    subject: "viability.check.requested"
+    server: "{{ secret('NATS_SERVER') }}"

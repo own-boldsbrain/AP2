@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ViabilityAnalysisCompleted",
+  "description": "Evento emitido quando a análise de viabilidade é concluída.",
+  "type": "object",
+  "properties": {
+    "check_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["APPROVED", "REJECTED"]
+    },
+    "solar_analysis": {
+      "type": "object",
+      "properties": {
+        "avg_irradiance": { "type": "number" },
+        "estimated_generation": { "type": "number" }
+      }
+    },
+    "aneel_analysis": {
+      "type": "object",
+      "properties": {
+        "tariff_group": { "type": "string" },
+        "avg_kwh_price": { "type": "number" }
+      }
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo da rejeição, se aplicável."
+    }
+  },
+  "required": ["check_id", "status"]
+}
