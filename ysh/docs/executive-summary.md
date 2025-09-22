@@ -74,7 +74,7 @@ Sugerimos uma estrutura de repositórios no GitHub organizada da seguinte forma:
     * BACEN/SGS
     * CVM/CKAN
     * CNPJ
-  
+
   Com funcionalidades de cache/TTL, upsert versionado e evento `LeadEnriched.Public`.
 
 ## Integração APITable
