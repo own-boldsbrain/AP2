@@ -83,3 +83,72 @@ article.proposal ul {
 article.proposal li {
   margin-bottom: 0.5rem;
 }
+
+.branch-demo {
+  gap: 1rem;
+}
+
+.branch-thread {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: white;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+}
+
+.branch-thread header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.branch-thread header strong {
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.branch-thread header span {
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.branch-thread ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.branch-thread li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.branch-thread li[data-role="assistant"] {
+  border-color: rgba(79, 70, 229, 0.35);
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.branch-thread li[data-role="user"] {
+  margin-left: auto;
+  background: white;
+}
+
+.branch-role {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+}
+
+.branch-thread li[data-role="assistant"] .branch-role {
+  color: #4338ca;
+}
