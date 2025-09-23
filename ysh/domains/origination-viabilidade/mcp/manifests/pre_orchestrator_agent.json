@@ -183,7 +183,7 @@
             {
                   "id": "calculate_viability",
                   "name": "Calcular Viabilidade",
-                  "description": "Calcula a viabilidade técnica do sistema solar baseado na localização e outros parâmetros.",
+                  "description": "Calcula a viabilidade técnica do sistema solar e retorna o breakdown 4-domínios (geometria solar, clima radiométrico, cadeia FV e KPIs de performance).",
                   "parameters": {
                         "type": "object",
                         "properties": {
