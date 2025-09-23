@@ -31,13 +31,24 @@ async def calculate_solar_position(
         tool_context: The ADK supplied tool context.
 
     Returns:
-        A string with the solar zenith and azimuth angles.
+        A Markdown snippet describing the Solar Geometry domain insights.
     """
     dt = pd.to_datetime(date)
+    if dt.tzinfo is None:
+        dt = dt.tz_localize('UTC')
+    else:
+        dt = dt.tz_convert('UTC')
     solpos = pvlib.solarposition.get_solarposition(dt, latitude, longitude)
     zenith = solpos['zenith'].iloc[0]
+    elevation = 90.0 - zenith
     azimuth = solpos['azimuth'].iloc[0]
-    return f'Solar zenith: {zenith:.2f} degrees, Azimuth: {azimuth:.2f} degrees'
+    return (
+        "## 1. Solar Geometry\n"
+        f"- Latitude: {latitude:.4f}°, Longitude: {longitude:.4f}°\n"
+        f"- Timestamp (UTC): {dt.isoformat()}\n"
+        f"- Solar zenith: {zenith:.2f}°, elevation: {elevation:.2f}°\n"
+        f"- Solar azimuth: {azimuth:.2f}°\n"
+    )
 
 
 async def get_irradiance(
@@ -59,7 +70,7 @@ async def get_irradiance(
         tool_context: The ADK supplied tool context.
 
     Returns:
-        A string with the calculated irradiance components.
+        A Markdown snippet describing the Radiometric & Climatological domain.
     """
     dt = pd.to_datetime(date)
     solpos = pvlib.solarposition.get_solarposition(dt, latitude, longitude)
@@ -82,7 +93,17 @@ async def get_irradiance(
         dni_extra=dni_extra,
         model='haydavies',
     )
-    return f'Irradiance (W/m^2): GHI={clearsky["ghi"].iloc[0]:.2f}, DNI={clearsky["dni"].iloc[0]:.2f}, DHI={clearsky["dhi"].iloc[0]:.2f}, POA Global={total_irrad["poa_global"].iloc[0]:.2f}'
+    ghi = clearsky['ghi'].iloc[0]
+    dni = clearsky['dni'].iloc[0]
+    dhi = clearsky['dhi'].iloc[0]
+    poa = total_irrad['poa_global'].iloc[0]
+    return (
+        "## 2. Radiometric & Climatological Modelling\n"
+        f"- Clear-sky GHI: {ghi:.2f} W/m²\n"
+        f"- Clear-sky DNI: {dni:.2f} W/m²\n"
+        f"- Clear-sky DHI: {dhi:.2f} W/m²\n"
+        f"- Plane-of-array irradiance (Hay-Davies): {poa:.2f} W/m²\n"
+    )
 
 
 async def get_pvsystem_performance(
@@ -106,7 +127,7 @@ async def get_pvsystem_performance(
         tool_context: The ADK supplied tool context.
 
     Returns:
-        A string with the calculated PV system power output.
+        A Markdown snippet describing PV conversion and performance indicators.
     """
     dt = pd.to_datetime(date)
     solpos = pvlib.solarposition.get_solarposition(dt, latitude, longitude)
@@ -138,4 +159,16 @@ async def get_pvsystem_performance(
     mc = pvlib.modelchain.ModelChain(system, location)
     mc.run_model(clearsky)
 
-    return f'PV System AC Power Output: {mc.results.ac.iloc[0]:.2f} W'
+    ac_power = mc.results.ac.iloc[0]
+    dc_series = mc.results.dc.get('p_dc') if hasattr(mc.results.dc, 'get') else None
+    dc_power = dc_series.iloc[0] if dc_series is not None else float('nan')
+    poa = mc.results.total_irrad['poa_global'].iloc[0]
+    performance_ratio = (ac_power / module_pdc0) if module_pdc0 else 0.0
+
+    return (
+        "## 3 & 4. PV Conversion and Performance Indicators\n"
+        f"- Module DC output: {dc_power:.2f} W\n"
+        f"- Inverter AC output: {ac_power:.2f} W\n"
+        f"- POA irradiance driving ModelChain: {poa:.2f} W/m²\n"
+        f"- Instantaneous PR (AC/Pdc0): {performance_ratio:.3f}\n"
+    )

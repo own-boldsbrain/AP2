@@ -1,5 +1,5 @@
 from math import isnan
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from app.meteo.pv_system import estimate_pv_performance
 from pydantic import BaseModel
@@ -15,18 +15,33 @@ class ViabilityIn(BaseModel):
     meteo_source: str = 'NASA_POWER'  # ou "CLEARSKY_ONLY"
 
 
+class DomainInsights(BaseModel):
+    summary: str
+    indicators: Dict[str, Any]
+
+
+class DomainBreakdown(BaseModel):
+    solar_geometry: DomainInsights
+    radiometric_climate: DomainInsights
+    pv_conversion: DomainInsights
+    performance_analysis: DomainInsights
+
+
 class ViabilityOut(BaseModel):
     kwh_year: float
     pr: float
     mc_result: Dict[str, Any] | None = None
+    domains: DomainBreakdown
 
 
 def compute_viability(inp: ViabilityIn) -> ViabilityOut:
     """
     Computa a viabilidade energética de um sistema fotovoltaico.
 
-    Utiliza o pvlib e dados NASA POWER para calcular a geração anual
-    e o Performance Ratio (PR) para um sistema de 1kWp.
+    Utiliza o pvlib e dados NASA POWER para calcular a geração anual,
+    Performance Ratio (PR) e consolidar o breakdown 4-domínios
+    (geometria solar, clima radiométrico, conversão FV e indicadores
+    de performance) consumido pelos agentes MCP/AP2.
     """
     # Chama o módulo pv_system para estimativa completa
     result = estimate_pv_performance(
@@ -44,4 +59,5 @@ def compute_viability(inp: ViabilityIn) -> ViabilityOut:
         kwh_year=result['kwh_year'],
         pr=result['pr'],
         mc_result=result['mc_result'],
+        domains=DomainBreakdown(**result['domains']),
     )

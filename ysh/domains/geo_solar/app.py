@@ -35,4 +35,10 @@ def solpos(lat: float, lon: float, iso: str) -> dict[str, float | str]:
         dt = dt.astimezone(timezone.utc)
 
     solar = solar_position(latitude=lat, longitude=lon, timestamp=dt)
-    return {"azimuth_deg": solar.azimuth, "elevation_deg": solar.elevation}
+    return {
+        "domain": "solar_geometry",
+        "summary": "Efeméride instantânea calculada via solposx (SPA).",
+        "timestamp_utc": dt.isoformat(),
+        "azimuth_deg": solar.azimuth,
+        "elevation_deg": solar.elevation,
+    }

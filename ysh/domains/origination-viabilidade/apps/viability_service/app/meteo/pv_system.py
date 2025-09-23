@@ -16,6 +16,22 @@ except ImportError:
 from app.meteo.nasa_power import get_annual_insolation, get_nasa_power
 
 
+def _safe_float(value: Any) -> Optional[float]:
+    """Converte valores numéricos em float, protegendo contra NaN."""
+
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except TypeError:
+        pass
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def estimate_pv_performance(
     latitude: float,
     longitude: float,
@@ -107,34 +123,114 @@ def estimate_pv_performance(
             losses_model='pvwatts'
         )
 
-        # Executa o modelchain
+        # Executa o modelchain com a série NASA POWER
         mc.run_model(weather)
 
-        # Obtém a energia AC anual
-        ac_annual = mc.results.ac.sum() / 1000  # Converte de W para kWh
+        solar_position = loc.get_solarposition(weather.index)
+        min_zenith = _safe_float(solar_position['zenith'].min()) or 0.0
+        max_elevation = _safe_float(solar_position['elevation'].max()) or 0.0
+        solar_hours = len(weather)
 
-        # Estima PR (Performance Ratio)
-        # PR = AC Energy / (Plane of Array Irradiance * System Size * (1 - system_loss))
+        ac_annual = mc.results.ac.sum() / 1000  # W → kWh
         poa_annual = mc.results.total_irrad['poa_global'].sum()
-        pr = ac_annual / (poa_annual * system.module_parameters['pdc0'] / 1e6)
 
-        # Ajusta para um ano completo
-        hours_in_data = len(weather)
-        if hours_in_data < 8760:  # menos que um ano
-            scaling_factor = 8760 / hours_in_data
+        scaling_factor = 1.0
+        if solar_hours and solar_hours < 8760:
+            scaling_factor = 8760 / solar_hours
             ac_annual *= scaling_factor
+            poa_annual *= scaling_factor
+
+        if poa_annual > 0:
+            pr = ac_annual / (poa_annual * system.module_parameters['pdc0'] / 1e6)
+        else:
+            pr = 0.0
+
+        system_size_kw = system.module_parameters['pdc0'] / 1000
+        capacity_factor = (
+            ac_annual / (system_size_kw * 8760)
+            if system_size_kw
+            else 0.0
+        )
+
+        ghi_mean = _safe_float(weather['ghi'].mean()) if 'ghi' in weather else None
+        dni_mean = _safe_float(weather['dni'].mean()) if 'dni' in weather else None
+        dhi_mean = _safe_float(weather['dhi'].mean()) if 'dhi' in weather else None
+        temp_mean = _safe_float(weather.get('temp_air').mean()) if 'temp_air' in weather else None
+        wind_mean = _safe_float(weather.get('wind_speed').mean()) if 'wind_speed' in weather else None
+
+        altitude = _safe_float(meta.get('altitude')) if isinstance(meta, dict) else None
+
+        domains = {
+            'solar_geometry': {
+                'summary': (
+                    "Efemérides solares derivadas da série NASA POWER, cobrindo "
+                    f"{solar_hours} horários e suportando ajustes de tilt/azimute."
+                ),
+                'indicators': {
+                    'latitude_deg': round(latitude, 6),
+                    'longitude_deg': round(longitude, 6),
+                    'array_tilt_deg': round(tilt, 2),
+                    'array_azimuth_deg': round(azimuth, 2),
+                    'altitude_m': altitude,
+                    'sampled_hours': solar_hours,
+                    'min_zenith_deg': _safe_float(min_zenith),
+                    'max_elevation_deg': _safe_float(max_elevation),
+                },
+            },
+            'radiometric_climate': {
+                'summary': (
+                    "Componentes GHI/DNI/DHI médios e condições atmosféricas "
+                    "retiradas do dataset horário NASA POWER."
+                ),
+                'indicators': {
+                    'mean_ghi_wm2': ghi_mean,
+                    'mean_dni_wm2': dni_mean,
+                    'mean_dhi_wm2': dhi_mean,
+                    'mean_temp_c': temp_mean,
+                    'mean_wind_ms': wind_mean,
+                    'poa_model': 'haydavies',
+                },
+            },
+            'pv_conversion': {
+                'summary': (
+                    "pvlib ModelChain (AOI físico, SAPM térmico, perdas pvwatts) "
+                    "com montagem {mount}."
+                ).format(mount=mount_type),
+                'indicators': {
+                    'system_loss_fraction': round(system_loss, 3),
+                    'module_pdc0_kw': round(system.module_parameters['pdc0'] / 1000, 3),
+                    'inverter_pdc0_kw': round(inverter_parameters['pdc0'] / 1000, 3),
+                    'inverter_efficiency_nominal': inverter_parameters['eta_inv_nom'],
+                },
+            },
+            'performance_analysis': {
+                'summary': (
+                    "Energia anual e KPIs ajustados para um ano completo para "
+                    "alimentar Origination e MCP."
+                ),
+                'indicators': {
+                    'annual_ac_kwh': round(ac_annual, 1),
+                    'performance_ratio': round(pr, 3),
+                    'capacity_factor': round(capacity_factor, 3),
+                    'poa_annual_kwh_m2': _safe_float(poa_annual / 1000),
+                    'expected_system_losses_pct': round(system_loss * 100, 1),
+                    'scaling_factor': round(scaling_factor, 3),
+                },
+            },
+        }
 
         return {
             'kwh_year': round(ac_annual, 1),
             'pr': round(pr, 3),
             'mc_result': {
-                'poa_annual': round(poa_annual * scaling_factor, 1),
-                'system_size_kw': 1.0,
-                'data_source': f"NASA POWER ({hours_in_data} horas)",
+                'poa_annual_kwh_m2': _safe_float(poa_annual / 1000),
+                'system_size_kw': system_size_kw,
+                'data_source': f"NASA POWER ({solar_hours} horas)",
                 'mount_type': mount_type,
                 'tilt': tilt,
                 'azimuth': azimuth
-            }
+            },
+            'domains': domains,
         }
     except Exception as e:
         print(f"Erro ao estimar performance PV com pvlib: {str(e)}")
@@ -198,21 +294,78 @@ def clearsky_estimate(
         # Ajusta para um ano completo (os timestamps são de 12 em 12 horas)
         scaling_factor = 8760 / len(times)
         kwh_annual *= scaling_factor
+        poa_annual *= scaling_factor
 
         # PR típico para sistema bem dimensionado
         pr = 0.80 * (1 - system_loss)
+
+        solar_hours = len(times)
+        min_zenith = _safe_float(solar_position['zenith'].min())
+        max_elevation = _safe_float(solar_position['elevation'].max())
+
+        domains = {
+            'solar_geometry': {
+                'summary': (
+                    "Efemérides sintéticas (céu limpo) geradas a cada 12 h para "
+                    "construir o quadro astronômico anual."
+                ),
+                'indicators': {
+                    'latitude_deg': round(latitude, 6),
+                    'longitude_deg': round(longitude, 6),
+                    'array_tilt_deg': round(tilt, 2),
+                    'array_azimuth_deg': round(azimuth, 2),
+                    'sampled_hours': solar_hours,
+                    'min_zenith_deg': min_zenith,
+                    'max_elevation_deg': max_elevation,
+                },
+            },
+            'radiometric_climate': {
+                'summary': "Modelo Ineichen de céu limpo sem dados meteorológicos reais.",
+                'indicators': {
+                    'mean_ghi_wm2': _safe_float(clearsky['ghi'].mean()),
+                    'mean_dni_wm2': _safe_float(clearsky['dni'].mean()),
+                    'mean_dhi_wm2': _safe_float(clearsky['dhi'].mean()),
+                    'poa_model': 'haydavies',
+                },
+            },
+            'pv_conversion': {
+                'summary': (
+                    "Conversão PV simplificada (eficiência fixa 15% módulo, 96% inversor) "
+                    "com perdas agregadas."
+                ),
+                'indicators': {
+                    'system_loss_fraction': round(system_loss, 3),
+                    'module_efficiency_assumed': 0.15,
+                    'inverter_efficiency_assumed': 0.96,
+                },
+            },
+            'performance_analysis': {
+                'summary': (
+                    "Energia anual estimada via clearsky para desbloquear recomendações "
+                    "quando dados climáticos não estão disponíveis."
+                ),
+                'indicators': {
+                    'annual_ac_kwh': round(kwh_annual, 1),
+                    'performance_ratio': round(pr, 3),
+                    'poa_annual_kwh_m2': _safe_float(poa_annual / 1000),
+                    'expected_system_losses_pct': round(system_loss * 100, 1),
+                    'scaling_factor': round(scaling_factor, 3),
+                },
+            },
+        }
 
         return {
             'kwh_year': round(kwh_annual, 1),
             'pr': round(pr, 3),
             'mc_result': {
-                'poa_annual': round(poa_annual * scaling_factor, 1),
+                'poa_annual_kwh_m2': _safe_float(poa_annual / 1000),
                 'system_size_kw': 1.0,
                 'data_source': "Clearsky Model",
                 'mount_type': "fixed",
                 'tilt': tilt,
                 'azimuth': azimuth
-            }
+            },
+            'domains': domains,
         }
     except Exception as e:
         print(f"Erro ao estimar com clearsky: {str(e)}")
@@ -255,6 +408,54 @@ def simplified_estimate(
     # kWh/kWp/ano = HSP * 365 * PR
     kwh_per_kwp_year = hsp * 365 * pr
 
+    domains = {
+        'solar_geometry': {
+            'summary': (
+                "Sem efemérides explícitas; utiliza apenas latitude/longitude para "
+                "calcular heurísticas regionais."
+            ),
+            'indicators': {
+                'latitude_deg': round(latitude, 6),
+                'longitude_deg': round(longitude, 6),
+            },
+        },
+        'radiometric_climate': {
+            'summary': (
+                "Horas de sol pleno estimadas por região ou média NASA POWER anual "
+                "(fallback)."
+            ),
+            'indicators': {
+                'hsp_hours_per_day': round(hsp, 2),
+                'source': (
+                    "regional_lookup" if insolation['is_estimated'] else "nasa_power_annual"
+                ),
+                'ghi_annual_kwh_m2': _safe_float(insolation.get('ghi_annual')),
+                'dni_annual_kwh_m2': _safe_float(insolation.get('dni_annual')),
+            },
+        },
+        'pv_conversion': {
+            'summary': (
+                "Modelo PVWatts agregado (1 kWp) com perdas sistêmicas médias "
+                "para manter o ciclo MCP/AP2 em funcionamento."
+            ),
+            'indicators': {
+                'system_loss_fraction': round(system_loss, 3),
+                'module_reference_kw': 1.0,
+            },
+        },
+        'performance_analysis': {
+            'summary': (
+                "Estimativa simplificada de produção anual e PR típico quando "
+                "não há dados meteorológicos disponíveis."
+            ),
+            'indicators': {
+                'annual_ac_kwh': round(kwh_per_kwp_year, 1),
+                'performance_ratio': round(pr, 3),
+                'expected_system_losses_pct': round(system_loss * 100, 1),
+            },
+        },
+    }
+
     return {
         'kwh_year': round(kwh_per_kwp_year, 1),
         'pr': round(pr, 3),
@@ -266,4 +467,5 @@ def simplified_estimate(
             'tilt': "optimal",
             'azimuth': "optimal",
         },
+        'domains': domains,
     }
